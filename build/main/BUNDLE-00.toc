@@ -1,0 +1,3 @@
+([('main',
+   '/Users/thomascasale/Documents/Projet/Python/crawler_football/dist/main',
+   'EXECUTABLE')],)

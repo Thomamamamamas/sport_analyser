@@ -34,45 +34,7 @@ class Team_data():
 class App(tkinter.Tk):
     def __init__(self):
         super().__init__()
-        self.ligue_name_url = ["bundesliga", "2-bundesliga", "premier-league","championship",
-        "bundesliga",
-        "pro-league",
-        "vysshaya-liga",
-        "serie-a",
-        "primera-division",
-        "primera-a",
-        "1-hnl",
-        "superliga",
-        "premiership",
-        "liga-pro",
-        "laliga",
-        "laliga2",
-        "meistriliiga",
-        "veikkausliiga",
-        "ligue-1",
-        "ligue-2",
-        "super-league",
-        "otp-bank-liga",
-        "premier-division",
-        "besta-deild-karla",
-        "ligat-ha-al",
-        "serie-a",
-        "serie-b",
-        "j1-league",
-        "eliteserien",
-        "primera-division",
-        "ekstraklasa",
-        "liga-portugal",
-        "liga-portugal-2",
-        "1-liga",
-        "liga-1",
-        "premier-league",
-        "fortuna-liga",
-        "prva-liga",
-        "allsvenskan",
-        "super-league",
-        "super-lig",
-        "mls"]
+        self.ligue_name_url = ["bundesliga", "2-bundesliga", "premier-league","championship","bundesliga","pro-league","vysshaya-liga","serie-a","primera-division","primera-a","1-hnl","superliga","premiership","liga-pro","laliga","laliga2","meistriliiga","veikkausliiga","ligue-1","ligue-2","super-league","otp-bank-liga","premier-division","besta-deild-karla","ligat-ha-al","serie-a","serie-b","j1-league","eliteserien","primera-division", "ekstraklasa","liga-portugal","liga-portugal-2","1-liga","liga-1","premier-league","fortuna-liga","prva-liga","allsvenskan","super-league","super-lig","mls"]
         self.team_added = []
         self.sorted = 0
         self.sort_type = 0
