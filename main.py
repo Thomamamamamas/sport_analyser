@@ -1,21 +1,15 @@
-from cProfile import label
-from pkgutil import get_data
 import tkinter
 
-from pytz import NonExistentTimeError
 from database_utils import *
 from utils import *
 from crawler_main import crawl_specific_ligue_matchs
 
 class Team_data():
     def __init__(self, tk):
-        self.frame_team = tkinter.Frame(tk.scrollable_frame)
-        self.frame_team.configure(bg='white')
         self.team_id = 0
         self.ligue_id = 0
         self.ligue_name = ''
         self.team_name = ''
-        self.delete_button = None
         self.ligue_label = None
         self.team_label = None
         self.taux_historique_label = None
@@ -40,9 +34,6 @@ class App(tkinter.Tk):
         self.sort_type = 0
         screen_width = self.winfo_screenwidth()
         screen_height = self.winfo_screenheight()
-        self.large_case_size = int(self.winfo_screenwidth() / 88)
-        print(self.large_case_size)
-        self.normal_case_size = int(self.winfo_screenwidth() / 100)
         self.geometry('%sx%s' % (screen_width, screen_height))
         self.configure(bg='white')
         self.s_db = Db()
@@ -52,15 +43,13 @@ class App(tkinter.Tk):
         if self.db:
             if start == 0:
                 self.cursor = self.db.cursor()
-                
                 self.place_option_menu()
-                self.place_column_utils()
                 self.place_result_frame()
+                self.place_column_utils()    
                 start = 1
         else:
             mylabel = tkinter.Label(self, text="Erreur de connection à la base de données", fg="red")
             mylabel.pack()
-
 
     def crawl_new_data(self):
         self.cursor.close()
@@ -68,40 +57,6 @@ class App(tkinter.Tk):
         crawl_specific_ligue_matchs(self.pays_selected.get(), self.ligue_name_url[self.ligue_id - 1], self.ligue_id)
         self.db = connect_to_database(self.s_db)
         self.cursor = self.db.cursor()
-
-    def delete_team(self, team):
-        team.frame_team.pack_forget()
-        self.team_added.remove(team)
-        del team
-        print(self.team_added)
-
-    def add_team(self):
-        print("ajoute team : %d de la ligue : %d" % (self.team_id, self.ligue_id))
-        new_team = Team_data(self)
-        new_team.team_id = self.team_id
-        new_team.ligue_id = self.ligue_id
-        new_team.ligue_name = database_fetchone(self.cursor, "SELECT LIGUE_NAME FROM %s.ligues WHERE ID = %d" %(self.sport_selected.get(), self.ligue_id))
-        new_team.team_name = database_fetchone(self.cursor, "SELECT TEAM_NAME FROM %s.teams WHERE ID = %d" %(self.sport_selected.get(), self.team_id))
-        new_team.taux_historique = get_taux_historique(self.db, self.team_id)
-        new_team.taux_saison = get_taux_actual_season(self.db, self.team_id, 2021, 2022)
-        new_team.serie = get_actual_serie(self.db, self.team_id, 2021, 2022)
-        new_team.taux_2x_no_goal = get_taux_x_no_goal(self.db, self.team_id, 2)
-        new_team.taux_3x_no_goal = get_taux_x_no_goal(self.db, self.team_id, 3)
-        self.prochain_match = database_fetchone(self.cursor, "SELECT MATCH_TO_COMING FROM %s.teams WHERE ID = %d" %(self.sport_selected.get(), self.team_id)) 
-
-        new_team.delete_button = tkinter.Button(new_team.frame_team, text= 'X', font= 'Helvetica 12 bold',  bg= 'white', fg= 'black', command= lambda: self.delete_team(new_team), width= 1, height = 3)
-        new_team.ligue_label = tkinter.Label(new_team.frame_team, text= new_team.ligue_name, font='Helvetica 18 bold',  bg='white', fg='black', width= self.normal_case_size, height = 3)
-        new_team.team_label = tkinter.Label(new_team.frame_team, text= new_team.team_name, font='Helvetica 18 bold',  bg='white', fg='black', width= self.large_case_size, height = 3)
-        new_team.taux_historique_label = tkinter.Label(new_team.frame_team, text= str(new_team.taux_historique), font='Helvetica 18 bold',  bg='white', fg='black', width= self.large_case_size, height = 3)
-        new_team.taux_saison_label = tkinter.Label(new_team.frame_team, text= str(new_team.taux_saison), font='Helvetica 18 bold',  bg='white', fg='black', width=self.large_case_size, height = 3)
-        new_team.serie_label = tkinter.Label(new_team.frame_team, text= str(new_team.serie), font='Helvetica 18 bold',  bg='white', fg='black', width= self.large_case_size, height = 3)
-        new_team.taux_2x_no_goal_label = tkinter.Label(new_team.frame_team, text= str(new_team.taux_2x_no_goal), font='Helvetica 18 bold',  bg='white', fg='black', width= self.large_case_size, height = 3)
-        new_team.taux_3x_no_goal_label = tkinter.Label(new_team.frame_team, text= str(new_team.taux_3x_no_goal), font='Helvetica 18 bold',  bg='white', fg='black', width= self.large_case_size, height = 3)
-        if new_team.prochain_match != None:
-            new_team.prochain_match_label = tkinter.Label(new_team.frame_team, text= self.prochain_match, font='Helvetica 18 bold',  bg='white', fg='black', width= self.normal_case_size, height = 1)
-        self.team_added.append(new_team)
-        print(self.team_added)
-        self.place_team(new_team)
 
     def sort_taux(self, type):
         column_sort = []
@@ -135,18 +90,21 @@ class App(tkinter.Tk):
                 column_sort[i + 1] = tmp
                 self.team_added[i + 1] = tmp2
             if self.sorted == 1 and self.sort_type == type:
-                print("second")
                 self.sorted = 0
             else:
-                print("first")
                 self.team_added.reverse()
                 self.sorted = 1
                 self.sort_type = type
             for i in range(0, len(self.team_added)):
-                print("delete")
-                self.team_added[i].frame_team.pack_forget()
+                self.team_added[i].ligue_label.pack_forget()
+                self.team_added[i].team_label.pack_forget()
+                self.team_added[i].taux_historique_label.pack_forget()
+                self.team_added[i].taux_saison_label.pack_forget()
+                self.team_added[i].serie_label.pack_forget()
+                self.team_added[i].taux_2x_no_goal_label.pack_forget()
+                self.team_added[i].taux_3x_no_goal_label.pack_forget()
+                self.team_added[i].prochain_match_label.pack_forget()
             self.place_teams()
-
         
     def change_selected_value(self, type):
         self.sport_drop.pack_forget()
@@ -177,12 +135,12 @@ class App(tkinter.Tk):
         self.add_button = tkinter.Button(self.frame_option, text="AJOUTER", bg="white", fg='black', borderwidth=0, command= self.add_team)
         self.crawl_button = tkinter.Button(self.frame_option, text="RÉCUPERE DONNÉES", bg="white", fg='black', borderwidth=0, command= lambda: self.crawl_new_data())
 
-        self.sport_drop.pack(side=tkinter.LEFT, anchor=tkinter.NW, padx=0)
-        self.pays_drop.pack(side=tkinter.LEFT, anchor=tkinter.NW, padx=0)
-        self.ligue_drop.pack(side=tkinter.LEFT, anchor=tkinter.NW, padx=0)
-        self.team_drop.pack(side=tkinter.LEFT, anchor=tkinter.NW, padx=0)
-        self.add_button.pack(side=tkinter.LEFT, anchor=tkinter.NW, padx=0)
-        self.crawl_button.pack(side=tkinter.RIGHT)
+        self.sport_drop.pack(side= 'left', anchor= 'nw', padx=0)
+        self.pays_drop.pack(side= 'left', anchor= 'nw', padx=0)
+        self.ligue_drop.pack(side= 'left', anchor= 'nw', padx=0)
+        self.team_drop.pack(side= 'left', anchor= 'nw', padx=0)
+        self.add_button.pack(side= 'left', anchor= 'nw', padx=0)
+        self.crawl_button.pack(side= 'right')
 
     def set_sport_selected(self, selection):
         print(selection)
@@ -238,43 +196,17 @@ class App(tkinter.Tk):
         self.add_button = tkinter.Button(self.frame_option, text="AJOUTER", bg="white", fg='black', borderwidth=0, command= self.add_team)
         self.crawl_button = tkinter.Button(self.frame_option, text="RÉCUPERE DONNÉES", bg="white", fg='black', borderwidth=0, command= lambda: self.crawl_new_data())
 
-        self.sport_drop.pack(side=tkinter.LEFT, anchor=tkinter.NW, padx=0)
-        self.pays_drop.pack(side=tkinter.LEFT, anchor=tkinter.NW, padx=0,)
-        self.ligue_drop.pack(side=tkinter.LEFT, anchor=tkinter.NW, padx=0, )
-        self.team_drop.pack(side=tkinter.LEFT, anchor=tkinter.NW, padx=0)
-        self.add_button.pack(side=tkinter.LEFT, anchor=tkinter.NW, padx=0)
-        self.crawl_button.pack(side=tkinter.RIGHT, anchor=tkinter.NW)
-
-
-    def place_column_utils(self):
-        frame_column = tkinter.Frame(self)
-        frame_column.configure(bg='white')
-        frame_column.pack(pady = 10, fill=tkinter.X)
-        
-
-        empty_label = tkinter.Label(frame_column, text = "  ", bg="white")
-        championnat_label = tkinter.Label(frame_column, text="Championnat", font='Helvetica 18 bold',  bg='white', fg='black', borderwidth=2, relief="solid", width= self.large_case_size, height = 5)
-        equipe_label = tkinter.Label(frame_column, text= "Équipe", font='Helvetica 18 bold',  bg='white', fg='black', borderwidth=2, relief="solid", width= self.large_case_size, height = 5)
-        taux_historique_button = tkinter.Button(frame_column, text= "Taux Historique", font='Helvetica 18 bold', bg='white', fg='black', borderwidth=2, command= lambda: self.sort_taux(1), width= self.normal_case_size, height = 5)
-        taux_saison_button = tkinter.Button(frame_column, text= "Taux Saison", font='Helvetica 18 bold', bg='white', fg='black', borderwidth=2, command= lambda: self.sort_taux(2), width= self.normal_case_size, height = 5)
-        serie_button = tkinter.Button(frame_column, text="Série en cours", font='Helvetica 18 bold',  bg='white', fg='black', borderwidth=2, relief="solid",command= lambda: self.sort_taux(3), width= self.normal_case_size, height = 5)
-        taux_2x_button = tkinter.Button(frame_column, text="Taux 2X", font='Helvetica 18 bold',  bg='white', fg='black', borderwidth=2, command= lambda: self.sort_taux(4), width= self.normal_case_size, height = 5)
-        taux_3x_button = tkinter.Button(frame_column, text="Taux 3X", font='Helvetica 18 bold',  bg='white', fg='black', borderwidth=2, command= lambda: self.sort_taux(5), width= self.normal_case_size, height = 5)
-        prochain_match_label = tkinter.Label(frame_column, text="Prochain match", font='Helvetica 18 bold', bg='white', fg='black', borderwidth=2, relief="solid", width= self.normal_case_size, height = 5)
-        
-        empty_label.grid(column = 0, row= 0)
-        championnat_label.grid(column= 1, row= 0)
-        equipe_label.grid(column= 2, row=0)
-        taux_historique_button.grid(column= 3, row= 0)
-        taux_saison_button.grid(column= 4, row= 0)
-        serie_button.grid(column= 5, row= 0)
-        taux_2x_button.grid(column= 6, row= 0)
-        taux_3x_button.grid(column= 7, row= 0)
-        prochain_match_label.grid(column= 8, row= 0)
+        self.sport_drop.pack(side= 'left', anchor= 'nw', padx=0)
+        self.pays_drop.pack(side= 'left', anchor= 'nw', padx=0)
+        self.ligue_drop.pack(side= 'left', anchor= 'nw', padx=0)
+        self.team_drop.pack(side= 'left', anchor= 'nw', padx=0)
+        self.add_button.pack(side= 'left', anchor= 'nw', padx=0)
+        self.crawl_button.pack(side= 'right')
 
     def place_result_frame(self):
         self.canvas = tkinter.Canvas(self)
-        self.scrollbar = tkinter.Scrollbar(self, orient="vertical", command=self.canvas.yview)
+        self.scrollbary = tkinter.Scrollbar(self, orient="vertical", command=self.canvas.yview)
+        self.scrollbarx = tkinter.Scrollbar(self.canvas, orient="horizontal", command=self.canvas.xview)
         self.scrollable_frame = tkinter.Frame(self.canvas)
         self.scrollable_frame.bind(
             "<Configure>",
@@ -283,26 +215,108 @@ class App(tkinter.Tk):
             )
             )
         self.canvas.create_window((0, 0), window=self.scrollable_frame, anchor="nw")
-        self.canvas.configure(yscrollcommand=self.scrollbar.set)
+        self.canvas.configure(yscrollcommand=self.scrollbary.set)
+        self.canvas.configure(xscrollcommand=self.scrollbarx.set)
+        self.scrollable_frame.configure(bg= 'white')
+        self.canvas.configure(bg= 'white')
         
         self.canvas.pack(side="left", fill="both", expand=True)
-        self.scrollbar.pack(side="right", fill="y")
+        self.scrollbary.pack(side="right", fill="y")
+        self.scrollbarx.pack(side="bottom", anchor="sw", fill="x")
+
+    def place_column_utils(self):
+        self.frame_column = []
+        for i in range(0, 8):
+            self.frame_column.append(tkinter.Frame(self.scrollable_frame))
+            self.frame_column[i].configure(bg='white')
+            self.frame_column[i].pack(side="left")
+
+        championnat_label = tkinter.Label(self.frame_column[0], text="Championnat", font='Helvetica 18 bold',  fg='black', bg='white', borderwidth=2,  height = 5)
+        equipe_label = tkinter.Label(self.frame_column[1], text= "Équipe", font='Helvetica 18 bold',  fg='black', bg='white', borderwidth=2, height = 5)
+        taux_historique_button = tkinter.Button(self.frame_column[2], text= "Taux Historique", font='Helvetica 18 bold',fg='black', bg='white', borderwidth=2, command= lambda: self.sort_taux(1),height = 5)
+        taux_saison_button = tkinter.Button(self.frame_column[3], text= "Taux Saison", font='Helvetica 18 bold', fg='black', bg='white', borderwidth=2, command= lambda: self.sort_taux(2), height = 5)
+        serie_button = tkinter.Button(self.frame_column[4], text="Série en cours", font='Helvetica 18 bold', fg='black', bg='white', borderwidth=2, command= lambda: self.sort_taux(3), height = 5)
+        taux_2x_button = tkinter.Button(self.frame_column[5], text="Taux 2X", font='Helvetica 18 bold',  fg='black', bg='white',borderwidth=2, command= lambda: self.sort_taux(4), height = 5)
+        taux_3x_button = tkinter.Button(self.frame_column[6], text="Taux 3X", font='Helvetica 18 bold', fg='black', bg='white', borderwidth=2, command= lambda: self.sort_taux(5), height = 5)
+        prochain_match_label = tkinter.Label(self.frame_column[7], text="Prochain match", font='Helvetica 18 bold', fg='black', bg='white', borderwidth=2,  height = 5)
+        delete_button = tkinter.Button(self.scrollable_frame, text="X", font='Helvetica 18 bold', fg='black', bg='white', width= 2, height = 5, command= lambda: self.delete_all_teams())
+
+        championnat_label.pack()
+        equipe_label.pack(padx= 50)
+        taux_historique_button.pack()
+        taux_saison_button.pack()
+        serie_button.pack()
+        taux_2x_button.pack()
+        taux_3x_button.pack()
+        prochain_match_label.pack(padx= 50)
+        delete_button.pack()
+        
+    def delete_team(self, team):
+        team.ligue_label.pack_forget()
+        team.team_label.pack_forget()
+        team.taux_historique_label.pack_forget()
+        team.taux_saison_label.pack_forget()
+        team.serie_label.pack_forget()
+        team.taux_2x_no_goal_label.pack_forget()
+        team.taux_3x_no_goal_label.pack_forget()
+        team.prochain_match_label.pack_forget()
+        self.team_added.remove(team)
+        del team
+        print(self.team_added)
+
+    def delete_all_teams(self):
+        for i in range(0, len(self.team_added)):
+            self.team_added[i].ligue_label.pack_forget()
+            self.team_added[i].team_label.pack_forget()
+            self.team_added[i].taux_historique_label.pack_forget()
+            self.team_added[i].taux_saison_label.pack_forget()
+            self.team_added[i].serie_label.pack_forget()
+            self.team_added[i].taux_2x_no_goal_label.pack_forget()
+            self.team_added[i].taux_3x_no_goal_label.pack_forget()
+            self.team_added[i].prochain_match_label.pack_forget()
+        self.team_added.clear()
+        print(self.team_added)
+
+    def add_team(self):
+        print("ajoute team : %d de la ligue : %d" % (self.team_id, self.ligue_id))
+        new_team = Team_data(self)
+        new_team.team_id = self.team_id
+        new_team.ligue_id = self.ligue_id
+        new_team.ligue_name = database_fetchone(self.cursor, "SELECT LIGUE_NAME FROM %s.ligues WHERE ID = %d" %(self.sport_selected.get(), self.ligue_id))
+        new_team.team_name = database_fetchone(self.cursor, "SELECT TEAM_NAME FROM %s.teams WHERE ID = %d" %(self.sport_selected.get(), self.team_id))
+        new_team.taux_historique = get_taux_historique(self.db, self.team_id)
+        new_team.taux_saison = get_taux_actual_season(self.db, self.team_id, 2021, 2022)
+        new_team.serie = get_actual_serie(self.db, self.team_id, 2021, 2022)
+        new_team.taux_2x_no_goal = get_taux_x_no_goal(self.db, self.team_id, 2)
+        new_team.taux_3x_no_goal = get_taux_x_no_goal(self.db, self.team_id, 3)
+        self.prochain_match = database_fetchone(self.cursor, "SELECT MATCH_TO_COMING FROM %s.teams WHERE ID = %d" %(self.sport_selected.get(), self.team_id)) 
+
+        new_team.ligue_label = tkinter.Label(self.frame_column[0], text= new_team.ligue_name, font='Helvetica 18 bold',  bg='white', fg='black', height= 2)
+        new_team.team_label = tkinter.Label(self.frame_column[1], text= new_team.team_name, font='Helvetica 18 bold',  bg='white', fg='black', height= 2)
+        new_team.taux_historique_label = tkinter.Label(self.frame_column[2], text= str(new_team.taux_historique), font='Helvetica 18 bold',  bg='white', height= 2)
+        new_team.taux_saison_label = tkinter.Label(self.frame_column[3], text= str(new_team.taux_saison), font='Helvetica 18 bold',  bg='white', fg='black', height= 2)
+        new_team.serie_label = tkinter.Label(self.frame_column[4], text= str(new_team.serie), font='Helvetica 18 bold',  bg='white', fg='black', height= 2)
+        new_team.taux_2x_no_goal_label = tkinter.Label(self.frame_column[5], text= str(new_team.taux_2x_no_goal), font='Helvetica 18 bold',  bg='white', fg='black', height= 2)
+        new_team.taux_3x_no_goal_label = tkinter.Label(self.frame_column[6], text= str(new_team.taux_3x_no_goal), font='Helvetica 18 bold',  bg='white', fg='black', height= 2)
+        if new_team.prochain_match != None:
+            new_team.prochain_match_label = tkinter.Label(self.frame_column[7], text= self.prochain_match, font='Helvetica 18 bold',  bg='white', fg='black', height= 2)
+        self.team_added.append(new_team)
+        print(self.team_added)
+        self.place_team(new_team)
 
     def place_teams(self):
         for i in range(0, len(self.team_added)):
             self.place_team(self.team_added[i])
 
     def place_team(self, team):
-        team.frame_team.pack(pady=0, fill=tkinter.X)
-        team.delete_button.grid(column = 0, row= 0)
-        team.ligue_label.grid(column = 1, row= 0)
-        team.team_label.grid(column = 2, row= 0)
-        team.taux_historique_label.grid(column = 3, row= 0)
-        team.taux_saison_label.grid(column = 4, row= 0)
-        team.serie_label.grid(column = 5, row= 0)
-        team.taux_2x_no_goal_label.grid(column = 6, row= 0)
-        team.taux_3x_no_goal_label.grid(column = 7, row= 0)
-        team.prochain_match_label.grid(column = 8, row= 0)
+        team.ligue_label.pack(pady= 20)
+        team.team_label.pack(pady = 20)
+        team.taux_historique_label.pack(pady = 20)
+        team.taux_saison_label.pack(pady = 20)
+        team.serie_label.pack(pady = 20)
+        team.taux_2x_no_goal_label.pack(pady = 20)
+        team.taux_3x_no_goal_label.pack(pady = 20)
+        team.prochain_match_label.pack(pady = 20)
 
 if __name__ == '__main__':
     app = App()
