@@ -15,9 +15,17 @@ def crawl_specific_ligue_matchs(pays, ligue_name, ligue_id):
     print(ligue_id)
     chrome_options = Options()
     chrome_options.add_argument("--headless")
-    driver = webdriver.Chrome(options=chrome_options)
-    subdriver = webdriver.Chrome(options=chrome_options)
-    caldriver = webdriver.Chrome(options=chrome_options)
+    try:
+        driver = webdriver.Chrome('config/chromedriver/chromedriver', options=chrome_options)
+        subdriver = webdriver.Chrome('config/chromedriver/chromedriver', options=chrome_options)
+        caldriver = webdriver.Chrome('config/chromedriver/chromedriver', options=chrome_options)
+    except:
+        try:
+            driver = webdriver.Chrome('config/chromedriver/chromedriver.exe', options=chrome_options)
+            subdriver = webdriver.Chrome('config/chromedriver/chromedriver.exe', options=chrome_options)
+            caldriver = webdriver.Chrome('config/chromedriver/chromedriver.exe', options=chrome_options)
+        except:
+            print("Chromedriver introuvable ou non valide")
     s_db = Db()
     db = connect_to_database(s_db)
     year1 = 2021
