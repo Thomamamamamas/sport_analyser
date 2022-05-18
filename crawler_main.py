@@ -2,30 +2,29 @@ from pkgutil import get_data
 import time
 import mysql
 import re
+
+from configparser import ConfigParser
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 
 from database_utils import *
-from crawler_utils_1 import get_who_goal_first, get_match_id, process_data, get_next_match_data, get_correct_page, match_already_exist, show_all_match
+from crawler_utils_1 import chromedriver_path, get_who_goal_first, get_match_id, process_data, get_next_match_data, get_correct_page, match_already_exist, show_all_match
+
+
 
 def crawl_specific_ligue_matchs(pays, ligue_name, ligue_id):
     print("Récupère les dernieres données de :")
     print(pays)
     print(ligue_name)
     print(ligue_id)
+    config = ConfigParser()
+    config.read("example.ini")
+    CHROME_DRIVER_PATH = config.get("chromedriver", "path")
     chrome_options = Options()
     chrome_options.add_argument("--headless")
-    try:
-        driver = webdriver.Chrome('config/chromedriver/chromedriver', options=chrome_options)
-        subdriver = webdriver.Chrome('config/chromedriver/chromedriver', options=chrome_options)
-        caldriver = webdriver.Chrome('config/chromedriver/chromedriver', options=chrome_options)
-    except:
-        try:
-            driver = webdriver.Chrome('config/chromedriver/chromedriver.exe', options=chrome_options)
-            subdriver = webdriver.Chrome('config/chromedriver/chromedriver.exe', options=chrome_options)
-            caldriver = webdriver.Chrome('config/chromedriver/chromedriver.exe', options=chrome_options)
-        except:
-            print("Chromedriver introuvable ou non valide")
+    driver = webdriver.Chrome(chromedriver_path(CHROME_DRIVER_PATH), options=chrome_options)
+    subdriver = webdriver.Chrome(chromedriver_path(CHROME_DRIVER_PATH), options=chrome_options)
+    caldriver = webdriver.Chrome(chromedriver_path(CHROME_DRIVER_PATH), options=chrome_options)
     s_db = Db()
     db = connect_to_database(s_db)
     year1 = 2021
@@ -87,8 +86,11 @@ def crawl_specific_match(driver, subdriver, s_db, db, ligue_id, year1, year2):
                         goal_first = get_who_goal_first(subdriver, match_url, subdiv, team_score, team_midterm_score, m)
                     else:
                         goal_first = 0
-                    cursor.execute("INSERT INTO matchs(ID, LIGUE_ID, YEAR1, YEAR2, JOURNEE, TEAM_ID, TEAM_NAME, GOAL, GOAL_MIDTERM, DOMICILE, GOAL_FIRST) VALUES (%d, %d , %d, %d, '%s', %d, '%s', %d, %d, %d, %d)" % (match_id, ligue_id, year1, year2, process_data(journee), team_id, process_data(team_name), team_score, team_midterm_score, domicile, goal_first))
-                    print("INSERT INTO matchs(ID, LIGUE_ID, YEAR1, YEAR2, JOURNEE TEAM_ID, TEAM_NAME, GOAL, GOAL_MIDTERM, DOMICILE, GOAL_FIRST) VALUES (%d, %d , %d, %d, '%s', %d, '%s', %d, %d, %d, %d)" % (match_id, ligue_id, year1, year2, process_data(journee), team_id, process_data(team_name), team_score, team_midterm_score, domicile, goal_first))
+                    try:
+                        cursor.execute("INSERT INTO matchs(ID, LIGUE_ID, YEAR1, YEAR2, JOURNEE, TEAM_ID, TEAM_NAME, GOAL, GOAL_MIDTERM, DOMICILE, GOAL_FIRST) VALUES (%d, %d , %d, %d, '%s', %d, '%s', %d, %d, %d, %d)" % (match_id, ligue_id, year1, year2, process_data(journee), team_id, process_data(team_name), team_score, team_midterm_score, domicile, goal_first))
+                        print("INSERT INTO matchs(ID, LIGUE_ID, YEAR1, YEAR2, JOURNEE TEAM_ID, TEAM_NAME, GOAL, GOAL_MIDTERM, DOMICILE, GOAL_FIRST) VALUES (%d, %d , %d, %d, '%s', %d, '%s', %d, %d, %d, %d)" % (match_id, ligue_id, year1, year2, process_data(journee), team_id, process_data(team_name), team_score, team_midterm_score, domicile, goal_first))
+                    except:
+                        continue
             else:
                 journee = subdiv.get_attribute('innerHTML')   
         db.commit()

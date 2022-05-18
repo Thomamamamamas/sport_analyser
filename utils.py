@@ -65,7 +65,10 @@ def get_actual_serie(db, team_id, year1, year2):
                 s_dg.domicile_journee[i] = s_dg.domicile_journee[i].replace("Quarts de finale", '')
                 s_dg.domicile_journee[i] = s_dg.domicile_journee[i].replace("Demi-finales", '99')
                 s_dg.domicile_journee[i] = s_dg.domicile_journee[i].replace("Finale", '100')
-                s_dg.domicile_journee[i] = int(s_dg.domicile_journee[i])
+                if s_dg.domicile_journee[i] != '':
+                    s_dg.domicile_journee[i] = int(s_dg.domicile_journee[i])
+                else:
+                    s_dg.domicile_journee[i] = 0
             else:
                 s_dg.domicile_journee[i] = 0
         reverse_sort_goal_by_day(s_dg)
@@ -77,8 +80,10 @@ def get_actual_serie(db, team_id, year1, year2):
                 actual_serie.append(1)
             else:
                 actual_serie.append(0)
+        actual_serie.reverse()
         return actual_serie
     except:
+        actual_serie.reverse()
         return actual_serie
 
 def get_taux_x_no_goal(db, team_id, x):

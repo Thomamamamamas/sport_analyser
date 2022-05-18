@@ -3,11 +3,12 @@ import time
 import mysql
 import re
 import json
+from configparser import ConfigParser
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 
 from database_utils import *
-from crawler_utils_1 import get_who_goal_first, get_match_id, process_data, get_correct_page, show_all_match
+from crawler_utils_1 import chromedriver_path, get_who_goal_first, get_next_match_data, get_match_id, process_data, get_correct_page, show_all_match
 
 def get_data_json(data):
     config_text = ''
@@ -184,3 +185,17 @@ def crawl_ligue_matchs(driver, subdriver, s_db, db, ligue_id, year1, year2):
         print("commit")
     else:
         print("Echec de la connection a la base de données")
+
+
+def crawl_all_ligue_next_match(db):
+    if db:
+        pays = get_data_json("pays")
+        ligue_name = get_data_json("ligues")
+        config = ConfigParser()
+        config.read("example.ini")
+        CHROME_DRIVER_PATH = config.get("chromedriver", "path")
+        chrome_options = Options()
+        chrome_options.add_argument("--headless")
+        caldriver = webdriver.Chrome(chromedriver_path(CHROME_DRIVER_PATH), options=chrome_options)
+        for i in range(0, len(pays)):
+            get_next_match_data(caldriver, db, pays[i], ligue_name[i])

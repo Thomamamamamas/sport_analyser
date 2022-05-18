@@ -2,6 +2,8 @@ import json
 from matplotlib.pyplot import subplots_adjust
 import time
 import re
+import os
+import sys
 from selenium import webdriver
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
@@ -22,6 +24,14 @@ def wait_till_appear_class(driver, delay, path):
     except TimeoutException:
             res = None
     return res
+
+
+def chromedriver_path(relative_path):
+    try:
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.dirname(__file__)
+    return os.path.join(base_path, relative_path)
 
 def get_correct_page(driver, pays, ligues, year1, year2, j):
     ligue_name = ''
