@@ -1,5 +1,3 @@
-from curses import nocbreak
-import mysql
 from database_utils import *
 
 class Day_goal():
@@ -50,31 +48,32 @@ def reverse_sort_goal_by_day(s_dg):
     s_dg.domicile_journee.reverse()
     s_dg.domicile_match.reverse()
     
-def get_domicile_journee(s_dg):
+def get_domicile_journee(s_dg, ligue_id):
     for i in range(0, len(s_dg.domicile_journee)):
-        if s_dg.domicile_journee[i] != '' and s_dg.domicile_journee[i] != None:
-            s_dg.domicile_journee[i] = s_dg.domicile_journee[i].replace("Journée ", '')
-            s_dg.domicile_journee[i] = s_dg.domicile_journee[i].replace("1/8 de finale", '97')
-            s_dg.domicile_journee[i] = s_dg.domicile_journee[i].replace("Quarts de finale", '')
-            s_dg.domicile_journee[i] = s_dg.domicile_journee[i].replace("Demi-finales", '99')
-            s_dg.domicile_journee[i] = s_dg.domicile_journee[i].replace("Finale", '100')
-            if s_dg.domicile_journee[i] != '':
-                s_dg.domicile_journee[i] = int(s_dg.domicile_journee[i])
+        if ligue_id != 42:
+            if s_dg.domicile_journee[i] != '' and s_dg.domicile_journee[i] != None:
+                s_dg.domicile_journee[i] = str(s_dg.domicile_journee[i]).replace("Journée ", '')
+                s_dg.domicile_journee[i] = str(s_dg.domicile_journee[i]).replace("1/8 de finale", '97')
+                s_dg.domicile_journee[i] = str(s_dg.domicile_journee[i]).replace("Quarts de finale", '')
+                s_dg.domicile_journee[i] = str(s_dg.domicile_journee[i]).replace("Demi-finales", '99')
+                s_dg.domicile_journee[i] = str(s_dg.domicile_journee[i]).replace("Finale", '100')
+                if s_dg.domicile_journee[i] != '':
+                    s_dg.domicile_journee[i] = int(s_dg.domicile_journee[i])
+                else:
+                    s_dg.domicile_journee[i] = 0
             else:
                 s_dg.domicile_journee[i] = 0
         else:
-            s_dg.domicile_journee[i] = 0
+            if s_dg.domicile_journee[i] != '' and s_dg.domicile_journee[i] != None:
+                s_dg.domicile_journee[i] = str(s_dg.domicile_journee[i]).split(' ', 2)[0]
+                s_dg.domicile_journee[i] = str(s_dg.domicile_journee[i][:len(s_dg.domicile_journee[i]) - 1])
+                s_dg.domicile_journee[i] = float(s_dg.domicile_journee[i])
+            else:
+                s_dg.domicile_journee[i] = 0
     
-def get_actual_serie(db, team_id, year1, year2):
+def get_actual_serie(s_dg):
     try:
-        s_dg = Day_goal()
-        cursor = db.cursor()
-        s_dg.domicile_match = database_fetchall(cursor, "SELECT GOAL_FIRST FROM matchs WHERE TEAM_ID = %d AND DOMICILE = 1 AND YEAR1 = %d AND YEAR2 = %d" % (team_id, year1, year2))
-        s_dg.domicile_journee = database_fetchall(cursor, "SELECT JOURNEE FROM matchs WHERE TEAM_ID = %d AND DOMICILE = 1 AND YEAR1 = %d AND YEAR2 = %d" % (team_id, year1, year2))
-        s_dg.domicile_journee =  s_dg.domicile_journee + database_fetchall(cursor, "SELECT JOURNEE FROM matchs WHERE TEAM_ID = %d AND DOMICILE = 1 AND YEAR1 = %d AND YEAR2 = %d" % (team_id, year1 - 1, year2 - 1))
-        s_dg.domicile_journee =  s_dg.domicile_journee + database_fetchall(cursor, "SELECT JOURNEE FROM matchs WHERE TEAM_ID = %d AND DOMICILE = 1 AND YEAR1 = %d AND YEAR2 = %d" % (team_id, year1 - 2, year2 - 2))
-        get_domicile_journee(s_dg)
-        reverse_sort_goal_by_day(s_dg)
+        
         actual_serie = []
         for i in range(0, 5):
             if i == len(s_dg.domicile_match):
@@ -89,17 +88,14 @@ def get_actual_serie(db, team_id, year1, year2):
         actual_serie.reverse()
         return actual_serie
 
-def get_longest_serie_without_goal(db, team_id, year1, year2):
-    s_dg = Day_goal()
-    cursor = db.cursor()
+def get_longest_serie_without_goal(cursor, s_dg, year1, year2, ligue_id, team_id):
     res = 0
     tmp = 0
     for i in range(0, 5):
         s_dg.domicile_match = database_fetchall(cursor, "SELECT GOAL_FIRST FROM matchs WHERE TEAM_ID = %d AND DOMICILE = 1 AND YEAR1 = %d AND YEAR2 = %d" % (team_id, year1, year2))
         s_dg.domicile_journee = database_fetchall(cursor, "SELECT JOURNEE FROM matchs WHERE TEAM_ID = %d AND DOMICILE = 1 AND YEAR1 = %d AND YEAR2 = %d" % (team_id, year1, year2))
-        if s_dg.domicile_journee == None:
-            return get_longest_serie_without_goal(db, team_id, year1 - 1, year2 - 1)
-        get_domicile_journee(s_dg)
+        get_domicile_journee(s_dg, ligue_id)
+        reverse_sort_goal_by_day(s_dg)
         for j in range(0, len(s_dg.domicile_journee)):
             if j == len(s_dg.domicile_match):
                 break
@@ -125,16 +121,14 @@ def calculate_actual_serie(actual_serie):
             break
     return res
 
-def get_taux_x_no_goal(db, team_id, x):
+def get_taux_x_no_goal(s_dg, x):
     try:
-        cursor = db.cursor()
-        domicile_match = database_fetchall(cursor, "SELECT GOAL_FIRST FROM matchs WHERE TEAM_ID = %d AND DOMICILE = 1" % (team_id))
-        total_match = len(domicile_match)
+        total_match = len(s_dg.domicile_match)
         total_goal_first = 0
         tmp = 0
 
         for i in range(0, total_match):
-            if domicile_match[i] == 1:
+            if s_dg.domicile_match[i] == 0:
                 tmp = tmp + 1
                 if tmp == x:
                     total_goal_first = total_goal_first + 1

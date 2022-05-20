@@ -1,15 +1,11 @@
-import json
-from matplotlib.pyplot import subplots_adjust
 import time
 import re
 import os
 import sys
-from selenium import webdriver
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 from selenium.common.exceptions import TimeoutException
-from selenium.webdriver.chrome.options import Options
 from database_utils import *
 
 def process_data(data):
@@ -67,6 +63,8 @@ def get_next_match_data(driver, db, pays, ligue_name):
     CLEANR = re.compile('<.*?>|&([a-z0-9]+|#[0-9]{1,6}|#x[0-9a-f]{1,6});')
 
     driver.get('https://www.flashscore.fr/football/%s/%s/calendrier/' % (pays, ligue_name))
+    teams1_name = []
+    teams2_name = []
     time.sleep(1)
     show_all_match(driver)
     if db:
@@ -85,6 +83,10 @@ def get_next_match_data(driver, db, pays, ligue_name):
                 team_1_name = re.sub(CLEANR, '', str(team_1_name.get_attribute("innerHTML")))
                 team_2_name = subdiv.find_elements_by_class_name('event__participant')[1]
                 team_2_name = re.sub(CLEANR, '', str(team_2_name.get_attribute("innerHTML")))
+                if team_1_name in teams1_name or team_2_name in teams2_name:
+                    return
+                teams1_name.append(team_1_name)
+                teams2_name.append(team_2_name)
                 match_time = subdiv.find_element_by_class_name('event__time')
                 match_time = re.sub(CLEANR, '', str(match_time.get_attribute("innerHTML")))
                 coming_match_time = database_fetchone(cursor, "SELECT MATCH_TO_COMING FROM teams WHERE TEAM_NAME = '%s'" % (process_data(team_1_name)))

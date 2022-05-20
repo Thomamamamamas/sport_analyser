@@ -1,6 +1,3 @@
-from pkgutil import get_data
-import time
-import mysql
 import re
 
 from configparser import ConfigParser
@@ -66,6 +63,9 @@ def crawl_specific_match(driver, subdriver, s_db, db, ligue_id, year1, year2):
                 team_2_name = re.sub(CLEANR, '', str(team_2_name.get_attribute("innerHTML")))
                 for m in range(0, 2):
                     team_name = subdiv.find_elements_by_class_name('event__participant')[m]
+                    if ligue_id == 42:
+                        journee = subdiv.find_element_by_class_name('event__time')
+                        journee  = re.sub(CLEANR, '', str(journee.get_attribute("innerHTML")))
                     if 'event__participant--home' in team_name.get_attribute('class'):
                         domicile = 1
                     else:
@@ -92,12 +92,11 @@ def crawl_specific_match(driver, subdriver, s_db, db, ligue_id, year1, year2):
                     except:
                         continue
             else:
-                journee = subdiv.get_attribute('innerHTML')   
+                if ligue_id != 42:
+                    journee = subdiv.get_attribute('innerHTML')   
         db.commit()
         print("commit")
         return 1
     else:
         print("Echec de la connection a la base de données")
         return 0
-
-

@@ -1,10 +1,9 @@
-from time import get_clock_info
 import tkinter
 
 from database_utils import *
 from utils import *
 from crawler_main import crawl_specific_ligue_matchs
-from team import place_teams
+from team import delete_all_teams_widget, place_teams, delete_all_teams_widget
 from widget import *
 
 
@@ -34,7 +33,7 @@ class App(tkinter.Tk):
                 self.cursor = self.db.cursor()
                 place_option_menu(self)
                 place_result_frame(self)
-                for i in range(0, 9):
+                for i in range(0, 10):
                     self.frame_column.append(tkinter.Frame(self.scrollable_frame))
                     self.frame_column[i].configure(bg='white')
                     self.frame_column[i].pack(side="left")
@@ -148,8 +147,7 @@ class App(tkinter.Tk):
                     self.sort_type = type
                 else:
                     self.sort_type = 1
-            for i in range(0, len(self.team_added)):
-                delete_team_widget(self.team_added[i])
+            delete_all_teams_widget(self)
             place_teams(self)
 
 if __name__ == '__main__':

@@ -1,6 +1,4 @@
-from pkgutil import get_data
 import time
-import mysql
 import re
 import json
 from configparser import ConfigParser
@@ -157,6 +155,9 @@ def crawl_ligue_matchs(driver, subdriver, s_db, db, ligue_id, year1, year2):
                     match_id = get_match_id(cursor)
                     for m in range(0, 2):
                         team_name = subdiv.find_elements_by_class_name('event__participant')[m]
+                        if ligue_id == 42:
+                            journee = subdiv.find_element_by_class_name('event__time')
+                            journee  = re.sub(CLEANR, '', str(journee.get_attribute("innerHTML")))
                         if 'event__participant--home' in team_name.get_attribute('class'):
                             domicile = 1
                         else:
@@ -180,7 +181,8 @@ def crawl_ligue_matchs(driver, subdriver, s_db, db, ligue_id, year1, year2):
                 except:
                     print("ne peux pas ajouter le resultat")
             else:
-                journee = subdiv.get_attribute('innerHTML')   
+                if ligue_id != 42:
+                    journee = subdiv.get_attribute('innerHTML')   
         db.commit()
         print("commit")
     else:
