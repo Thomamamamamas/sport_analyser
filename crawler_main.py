@@ -25,7 +25,7 @@ def crawl_specific_ligue_matchs(pays, ligue_name, ligue_id):
     year1 = 2021
     year2 = 2022
 
-    get_next_match_data(caldriver, db, pays, ligue_name)
+    get_next_match_data(caldriver, db, pays, ligue_name, ligue_id)
     for j in range(0, 5):
         get_correct_page(driver, pays, ligue_name, year1, year2, j)
         show_all_match(driver)
@@ -61,7 +61,7 @@ def crawl_specific_match(driver, subdriver, s_db, db, ligue_id, year1, year2):
                 team_2_name = re.sub(CLEANR, '', str(team_2_name.get_attribute("innerHTML")))
                 for m in range(0, 2):
                     team_name = subdiv.find_elements_by_class_name('event__participant')[m]
-                    if ligue_id == 42:
+                    if ligue_id == 42 or ligue_id == 35:
                         journee = subdiv.find_element_by_class_name('event__time')
                         journee  = re.sub(CLEANR, '', str(journee.get_attribute("innerHTML")))
                     if 'event__participant--home' in team_name.get_attribute('class'):
@@ -92,7 +92,7 @@ def crawl_specific_match(driver, subdriver, s_db, db, ligue_id, year1, year2):
                         print("N'insère rien")
                         continue
             else:
-                if ligue_id != 42:
+                if ligue_id != 42 and ligue_id != 35:
                     journee = subdiv.get_attribute('innerHTML')   
         db.commit()
         print("commit")

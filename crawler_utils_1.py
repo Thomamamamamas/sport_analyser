@@ -68,7 +68,7 @@ def get_correct_page(driver, pays, ligues, year1, year2, j):
     return ligue_name
 
 
-def get_next_match_data(driver, db, pays, ligue_name):
+def get_next_match_data(driver, db, pays, ligue_name, ligue_id):
     CLEANR = re.compile('<.*?>|&([a-z0-9]+|#[0-9]{1,6}|#x[0-9a-f]{1,6});')
 
     driver.get('https://www.flashscore.fr/football/%s/%s/calendrier/' % (pays, ligue_name))
@@ -79,6 +79,7 @@ def get_next_match_data(driver, db, pays, ligue_name):
         cursor = db.cursor(buffered=True)
         try:
             div = driver.find_element_by_class_name('sportName')
+            cursor.execute("UPDATE teams SET MATCH_TO_COMING = '' WHERE LIGUE_ID = %d" % (ligue_id))
         except:
             return
         for n in range(2, 100):
@@ -87,25 +88,19 @@ def get_next_match_data(driver, db, pays, ligue_name):
             except:
                 break
             if 'event__round' not in subdiv.get_attribute('class') and 'event__header' not in subdiv.get_attribute('class'):
-                team_1_name = subdiv.find_elements_by_class_name('event__participant')[0]
-                team_1_name = re.sub(CLEANR, '', str(team_1_name.get_attribute("innerHTML")))
-                team_2_name = subdiv.find_elements_by_class_name('event__participant')[1]
-                team_2_name = re.sub(CLEANR, '', str(team_2_name.get_attribute("innerHTML")))
-                if team_1_name in teams_name or team_2_name in teams_name:
+                team_name = subdiv.find_element_by_class_name('event__participant--home')
+                team_name = re.sub(CLEANR, '', str(team_name.get_attribute("innerHTML")))
+                if team_name in teams_name:
                     print("Date du prochain match deja enregistrer")
                     return
-                teams_name.append(team_1_name)
-                teams_name.append(team_2_name)
+                teams_name.append(team_name)
                 match_time = subdiv.find_element_by_class_name('event__time')
                 match_time = re.sub(CLEANR, '', str(match_time.get_attribute("innerHTML")))
-                coming_match_time = database_fetchone(cursor, "SELECT MATCH_TO_COMING FROM teams WHERE TEAM_NAME = '%s'" % (process_data(team_1_name)))
+                coming_match_time = database_fetchone(cursor, "SELECT MATCH_TO_COMING FROM teams WHERE TEAM_NAME = '%s'" % (process_data(team_name)))
                 if coming_match_time != match_time:
-                    print(team_1_name)
-                    print(team_2_name)
-                    cursor.execute("UPDATE teams SET MATCH_TO_COMING = '%s' WHERE TEAM_NAME = '%s'" % (match_time, process_data(team_1_name)))
-                    print("UPDATE teams SET MATCH_TO_COMING = '%s' WHERE TEAM_NAME = '%s'" % (match_time, process_data(team_1_name)))
-                    cursor.execute("UPDATE teams SET MATCH_TO_COMING = '%s' WHERE TEAM_NAME = '%s'" % (match_time, process_data(team_2_name)))
-                    print("UPDATE teams SET MATCH_TO_COMING = '%s' WHERE TEAM_NAME = '%s'" % (match_time, process_data(team_2_name)))      
+                    print(team_name)
+                    cursor.execute("UPDATE teams SET MATCH_TO_COMING = '%s' WHERE TEAM_NAME = '%s'" % (match_time, process_data(team_name)))
+                    print("UPDATE teams SET MATCH_TO_COMING = '%s' WHERE TEAM_NAME = '%s'" % (match_time, process_data(team_name)))    
                 else:
                     print("Date du prochain match deja enregistrer")
                     break
