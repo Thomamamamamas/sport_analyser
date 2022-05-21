@@ -1,11 +1,11 @@
 import re
 
-from configparser import ConfigParser
+
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 
 from database_utils import *
-from crawler_utils_1 import chromedriver_path, get_who_goal_first, get_match_id, process_data, get_next_match_data, get_correct_page, match_already_exist, show_all_match
+from crawler_utils_1 import get_os_chromedriver_path, chromedriver_path, get_who_goal_first, get_match_id, process_data, get_next_match_data, get_correct_page, match_already_exist, show_all_match
 
 
 
@@ -14,9 +14,7 @@ def crawl_specific_ligue_matchs(pays, ligue_name, ligue_id):
     print(pays)
     print(ligue_name)
     print(ligue_id)
-    config = ConfigParser()
-    config.read("example.ini")
-    CHROME_DRIVER_PATH = config.get("chromedriver", "path")
+    CHROME_DRIVER_PATH = get_os_chromedriver_path()
     chrome_options = Options()
     chrome_options.add_argument("--headless")
     driver = webdriver.Chrome(chromedriver_path(CHROME_DRIVER_PATH), options=chrome_options)
@@ -79,7 +77,8 @@ def crawl_specific_match(driver, subdriver, s_db, db, ligue_id, year1, year2):
                     except:
                         team_midterm_score = 0
                     team_id =  database_fetchone(cursor, "SELECT ID FROM teams WHERE TEAM_NAME = '%s'" % (process_data(team_name)))
-                    if match_already_exist(cursor, process_data(team_1_name), process_data(team_2_name), process_data(journee)) == 1:
+                    if match_already_exist(cursor, process_data(team_1_name), process_data(team_2_name), process_data(journee), year1, year2) == 1:
+                        print("Match dèjà enregistré")
                         return 0
                     match_url = 'https://www.flashscore.fr/match/' + subdiv.get_attribute('id').split('_', 2)[2] + '/#/resume-du-match/resume-du-match'
                     if domicile == 1:
@@ -90,6 +89,7 @@ def crawl_specific_match(driver, subdriver, s_db, db, ligue_id, year1, year2):
                         cursor.execute("INSERT INTO matchs(ID, LIGUE_ID, YEAR1, YEAR2, JOURNEE, TEAM_ID, TEAM_NAME, GOAL, GOAL_MIDTERM, DOMICILE, GOAL_FIRST) VALUES (%d, %d , %d, %d, '%s', %d, '%s', %d, %d, %d, %d)" % (match_id, ligue_id, year1, year2, process_data(journee), team_id, process_data(team_name), team_score, team_midterm_score, domicile, goal_first))
                         print("INSERT INTO matchs(ID, LIGUE_ID, YEAR1, YEAR2, JOURNEE TEAM_ID, TEAM_NAME, GOAL, GOAL_MIDTERM, DOMICILE, GOAL_FIRST) VALUES (%d, %d , %d, %d, '%s', %d, '%s', %d, %d, %d, %d)" % (match_id, ligue_id, year1, year2, process_data(journee), team_id, process_data(team_name), team_score, team_midterm_score, domicile, goal_first))
                     except:
+                        print("N'insère rien")
                         continue
             else:
                 if ligue_id != 42:

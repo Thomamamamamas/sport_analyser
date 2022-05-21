@@ -102,8 +102,8 @@ def add_team(app, ligue_id, team_id):
     new_team.serie = get_actual_serie(s_dg)
     new_team.longest_serie = get_longest_serie_without_goal(app.cursor, s_dg, year1, year2, new_team.ligue_id, new_team.team_id)
     new_team.actual_serie = calculate_actual_serie(new_team.serie)
-    new_team.taux_2x_no_goal = get_taux_x_no_goal(s_dg, 2)
-    new_team.taux_3x_no_goal = get_taux_x_no_goal(s_dg, 3)
+    new_team.taux_2x_no_goal = get_taux_x_no_goal(app.cursor, s_dg, year1, year2, new_team.ligue_id, new_team.team_id, 2)
+    new_team.taux_3x_no_goal = get_taux_x_no_goal(app.cursor, s_dg, year1, year2, new_team.ligue_id, new_team.team_id, 3)
     new_team.prochain_match = database_fetchone(app.cursor, "SELECT MATCH_TO_COMING FROM %s.teams WHERE ID = %d" %(app.sport_selected.get(), new_team.team_id)) 
 
     new_team.ligue_frame = tkinter.Frame(app.frame_column[0], bg='white', height= 3)
@@ -173,10 +173,10 @@ def delete_all_teams_widget(app):
     app.delete_button.pack_forget()
     for i in range(0, 10):
         app.frame_column[i].pack_forget()
-    for i in range(0, 10):
-        app.frame_column[i].pack(side="left")
     for i in range(0, len(app.team_added)):
         delete_team_widget(app.team_added[i])
+    for i in range(0, 10):
+        app.frame_column[i].pack(side="left")
     app.championnat_label.pack()
     app.equipe_label.pack(padx= 50)
     app.taux_historique_button.pack()

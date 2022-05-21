@@ -2,6 +2,8 @@ import time
 import re
 import os
 import sys
+import platform
+from configparser import ConfigParser
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
@@ -21,6 +23,13 @@ def wait_till_appear_class(driver, delay, path):
             res = None
     return res
 
+def get_os_chromedriver_path():
+    config = ConfigParser()
+    config.read("example.ini")
+    if platform.system() == 'Darwin':
+        return config.get("chromedriver_mac", "path")
+    elif platform.system() == 'Windows':
+        return config.get("chromedriver_windows", "path")
 
 def chromedriver_path(relative_path):
     try:
@@ -63,8 +72,7 @@ def get_next_match_data(driver, db, pays, ligue_name):
     CLEANR = re.compile('<.*?>|&([a-z0-9]+|#[0-9]{1,6}|#x[0-9a-f]{1,6});')
 
     driver.get('https://www.flashscore.fr/football/%s/%s/calendrier/' % (pays, ligue_name))
-    teams1_name = []
-    teams2_name = []
+    teams_name = []
     time.sleep(1)
     show_all_match(driver)
     if db:
@@ -83,10 +91,11 @@ def get_next_match_data(driver, db, pays, ligue_name):
                 team_1_name = re.sub(CLEANR, '', str(team_1_name.get_attribute("innerHTML")))
                 team_2_name = subdiv.find_elements_by_class_name('event__participant')[1]
                 team_2_name = re.sub(CLEANR, '', str(team_2_name.get_attribute("innerHTML")))
-                if team_1_name in teams1_name or team_2_name in teams2_name:
+                if team_1_name in teams_name or team_2_name in teams_name:
+                    print("Date du prochain match deja enregistrer")
                     return
-                teams1_name.append(team_1_name)
-                teams2_name.append(team_2_name)
+                teams_name.append(team_1_name)
+                teams_name.append(team_2_name)
                 match_time = subdiv.find_element_by_class_name('event__time')
                 match_time = re.sub(CLEANR, '', str(match_time.get_attribute("innerHTML")))
                 coming_match_time = database_fetchone(cursor, "SELECT MATCH_TO_COMING FROM teams WHERE TEAM_NAME = '%s'" % (process_data(team_1_name)))
@@ -98,15 +107,16 @@ def get_next_match_data(driver, db, pays, ligue_name):
                     cursor.execute("UPDATE teams SET MATCH_TO_COMING = '%s' WHERE TEAM_NAME = '%s'" % (match_time, process_data(team_2_name)))
                     print("UPDATE teams SET MATCH_TO_COMING = '%s' WHERE TEAM_NAME = '%s'" % (match_time, process_data(team_2_name)))      
                 else:
+                    print("Date du prochain match deja enregistrer")
                     break
                 db.commit()
                 print("commit")
     else:
         print("Echec de la connection a la base de données")
 
-def match_already_exist(cursor, team_1_name, team_2_name, journee):
-    team1_matchs_id = database_fetchall(cursor, "SELECT ID FROM matchs WHERE TEAM_NAME = '%s' AND JOURNEE = '%s'" % (team_1_name, journee))
-    team2_matchs_id = database_fetchall(cursor, "SELECT ID FROM matchs WHERE TEAM_NAME = '%s' AND JOURNEE = '%s'" % (team_2_name, journee))
+def match_already_exist(cursor, team_1_name, team_2_name, journee, year1, year2):
+    team1_matchs_id = database_fetchall(cursor, "SELECT ID FROM matchs WHERE TEAM_NAME = '%s' AND JOURNEE = '%s' AND YEAR1 = %d AND YEAR2 = %d" % (team_1_name, journee, year1, year2))
+    team2_matchs_id = database_fetchall(cursor, "SELECT ID FROM matchs WHERE TEAM_NAME = '%s' AND JOURNEE = '%s' AND YEAR1 = %d AND YEAR2 = %d" % (team_2_name, journee, year1, year2))
     for i in range(0, len(team1_matchs_id)):
         for j in range(0, len(team2_matchs_id)):
             if team1_matchs_id[i] == team2_matchs_id[j]:

@@ -55,7 +55,7 @@ class App(tkinter.Tk):
         self.cursor.close()
         self.db.close()
         for i in range(0, len(ligues)):
-            crawl_specific_ligue_matchs(self.pays_name_url[ligues[i] - 1], self.ligue_name_url[ligues[i] - 1], ligues)  
+            crawl_specific_ligue_matchs(self.pays_name_url[ligues[i] - 1], self.ligue_name_url[ligues[i] - 1], ligues[i])  
         self.db = connect_to_database(self.s_db)
         self.cursor = self.db.cursor()
         self.has_crawled_all_data = 1

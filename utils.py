@@ -121,19 +121,27 @@ def calculate_actual_serie(actual_serie):
             break
     return res
 
-def get_taux_x_no_goal(s_dg, x):
+def get_taux_x_no_goal(cursor, s_dg,  year1, year2, ligue_id, team_id, x):
     try:
-        total_match = len(s_dg.domicile_match)
+        total_match = 0
         total_goal_first = 0
         tmp = 0
-
-        for i in range(0, total_match):
-            if s_dg.domicile_match[i] == 0:
-                tmp = tmp + 1
-                if tmp == x:
-                    total_goal_first = total_goal_first + 1
-            else:
-                tmp = 0
+        for j in range(0, 5):
+            s_dg.domicile_match = database_fetchall(cursor, "SELECT GOAL_FIRST FROM matchs WHERE TEAM_ID = %d AND DOMICILE = 1 AND YEAR1 = %d AND YEAR2 = %d" % (team_id, year1, year2))
+            s_dg.domicile_journee = database_fetchall(cursor, "SELECT JOURNEE FROM matchs WHERE TEAM_ID = %d AND DOMICILE = 1 AND YEAR1 = %d AND YEAR2 = %d" % (team_id, year1, year2))
+            get_domicile_journee(s_dg, ligue_id)
+            reverse_sort_goal_by_day(s_dg)
+            tmp_total_match = len(s_dg.domicile_match)
+            total_match = tmp_total_match + total_match
+            for i in range(0, tmp_total_match):
+                if s_dg.domicile_match[i] == 0:
+                    tmp = tmp + 1
+                    if tmp == x:
+                        total_goal_first = total_goal_first + 1
+                else:
+                    tmp = 0
+            year1 = year1 - 1
+            year2 = year2 - 1
         return round((total_goal_first / total_match) * 100, 2)
     except:
         return 0
