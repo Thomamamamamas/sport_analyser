@@ -50,7 +50,7 @@ def reverse_sort_goal_by_day(s_dg):
     
 def get_domicile_journee(s_dg, ligue_id):
     for i in range(0, len(s_dg.domicile_journee)):
-        if ligue_id != 42 and ligue_id != 35:
+        if ligue_id != 42 and ligue_id != 35 and ligue_id != 26 and ligue_id != 27 and ligue_id != 13 and ligue_id != 25 and ligue_id != 29 and ligue_id != 36:
             if s_dg.domicile_journee[i] != '' and s_dg.domicile_journee[i] != None:
                 s_dg.domicile_journee[i] = str(s_dg.domicile_journee[i]).replace("Journée ", '')
                 s_dg.domicile_journee[i] = str(s_dg.domicile_journee[i]).replace("1/8 de finale", '97')
@@ -65,12 +65,15 @@ def get_domicile_journee(s_dg, ligue_id):
                 s_dg.domicile_journee[i] = 0
         else:
             if s_dg.domicile_journee[i] != '' and s_dg.domicile_journee[i] != None:
-                s_dg.domicile_journee[i] = str(s_dg.domicile_journee[i]).split(' ', 2)[0]
-                s_dg.domicile_journee[i] = str(s_dg.domicile_journee[i][:len(s_dg.domicile_journee[i]) - 1])
-                s_dg.domicile_journee[i] = str(s_dg.domicile_journee[i]).split('.', 2)[1] + '.' + str(s_dg.domicile_journee[i]).split('.', 2)[0]
-                s_dg.domicile_journee[i] = float(s_dg.domicile_journee[i])
-                if ligue_id == 35 and s_dg.domicile_journee[i] >= 7:
-                    s_dg.domicile_journee[i] = s_dg.domicile_journee[i] - 12
+                try:
+                    s_dg.domicile_journee[i] = str(s_dg.domicile_journee[i]).split(' ', 2)[0]
+                    s_dg.domicile_journee[i] = str(s_dg.domicile_journee[i][:len(s_dg.domicile_journee[i]) - 1])
+                    s_dg.domicile_journee[i] = str(s_dg.domicile_journee[i]).split('.', 2)[1] + '.' + str(s_dg.domicile_journee[i]).split('.', 2)[0]
+                    s_dg.domicile_journee[i] = float(s_dg.domicile_journee[i])
+                    if (ligue_id != 42) and s_dg.domicile_journee[i] >= 7:
+                        s_dg.domicile_journee[i] = s_dg.domicile_journee[i] - 12
+                except:
+                    s_dg.domicile_journee[i] = 0
             else:
                 s_dg.domicile_journee[i] = 0
     
@@ -78,6 +81,7 @@ def get_actual_serie(s_dg):
     try:
         
         actual_serie = []
+        
         for i in range(0, 5):
             if i == len(s_dg.domicile_match):
                 break

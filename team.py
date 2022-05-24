@@ -92,13 +92,13 @@ def add_team(app, ligue_id, team_id):
     s_dg = Day_goal()
     s_dg.domicile_match = database_fetchall(app.cursor, "SELECT GOAL_FIRST FROM matchs WHERE TEAM_ID = %d AND DOMICILE = 1 AND YEAR1 = %d AND YEAR2 = %d" % (team_id, year1, year2))
     s_dg.domicile_journee = database_fetchall(app.cursor, "SELECT JOURNEE FROM matchs WHERE TEAM_ID = %d AND DOMICILE = 1 AND YEAR1 = %d AND YEAR2 = %d" % (team_id, year1, year2))
-    get_domicile_journee(s_dg, new_team.ligue_id)
-    reverse_sort_goal_by_day(s_dg)
     
     new_team.taux_historique = get_taux_historique(app.db, app.team_id)
     new_team.taux_saison = get_taux_actual_season(app.db, app.team_id, 2021, 2022)
     if new_team.taux_saison == 0:
         return
+    get_domicile_journee(s_dg, new_team.ligue_id)
+    reverse_sort_goal_by_day(s_dg)
     new_team.serie = get_actual_serie(s_dg)
     new_team.longest_serie = get_longest_serie_without_goal(app.cursor, s_dg, year1, year2, new_team.ligue_id, new_team.team_id)
     new_team.actual_serie = calculate_actual_serie(new_team.serie)

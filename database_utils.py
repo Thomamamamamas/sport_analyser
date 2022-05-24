@@ -1,17 +1,23 @@
 import mysql
-
-
+import os
+import sys
+import platform
 from asyncio import events
 import mysql.connector
 
 class Db():
     def __init__(self):
+        if platform.system() == 'Darwin':
+            self.passwd = 'Zbeubzbeub'
+        elif platform.system() == 'Windows':
+            self.passwd = '12345'
         self.host = "localhost"
         self.username = "root"
-        self.passwd = 'Zbeubzbeub'
+        
         self.database = 'football'
 
 def connect_to_database(s_db):
+    
     try:
         db = mysql.connector.connect(
             host = s_db.host,

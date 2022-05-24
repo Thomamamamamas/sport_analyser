@@ -78,8 +78,8 @@ def get_next_match_data(driver, db, pays, ligue_name, ligue_id):
     if db:
         cursor = db.cursor(buffered=True)
         try:
-            div = driver.find_element_by_class_name('sportName')
             cursor.execute("UPDATE teams SET MATCH_TO_COMING = '' WHERE LIGUE_ID = %d" % (ligue_id))
+            div = driver.find_element_by_class_name('sportName')       
         except:
             return
         for n in range(2, 100):
@@ -109,9 +109,9 @@ def get_next_match_data(driver, db, pays, ligue_name, ligue_id):
     else:
         print("Echec de la connection a la base de données")
 
-def match_already_exist(cursor, team_1_name, team_2_name, journee, year1, year2):
-    team1_matchs_id = database_fetchall(cursor, "SELECT ID FROM matchs WHERE TEAM_NAME = '%s' AND JOURNEE = '%s' AND YEAR1 = %d AND YEAR2 = %d" % (team_1_name, journee, year1, year2))
-    team2_matchs_id = database_fetchall(cursor, "SELECT ID FROM matchs WHERE TEAM_NAME = '%s' AND JOURNEE = '%s' AND YEAR1 = %d AND YEAR2 = %d" % (team_2_name, journee, year1, year2))
+def match_already_exist(cursor, ligue_id, team_1_name, team_2_name, journee, year1, year2):
+    team1_matchs_id = database_fetchall(cursor, "SELECT ID FROM matchs WHERE LIGUE_ID = %d AND TEAM_NAME = '%s' AND JOURNEE = '%s' AND YEAR1 = %d AND YEAR2 = %d" % (ligue_id, team_1_name, journee, year1, year2))
+    team2_matchs_id = database_fetchall(cursor, "SELECT ID FROM matchs WHERE LIGUE_ID = %d AND TEAM_NAME = '%s' AND JOURNEE = '%s' AND YEAR1 = %d AND YEAR2 = %d" % (ligue_id, team_2_name, journee, year1, year2))
     for i in range(0, len(team1_matchs_id)):
         for j in range(0, len(team2_matchs_id)):
             if team1_matchs_id[i] == team2_matchs_id[j]:

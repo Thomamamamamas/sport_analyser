@@ -5,7 +5,7 @@ from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 
 from database_utils import *
-from crawler_utils_1 import get_os_chromedriver_path, chromedriver_path, get_who_goal_first, get_match_id, process_data, get_next_match_data, get_correct_page, match_already_exist, show_all_match
+from crawler_utils_1 import get_os_chromedriver_path, chromedriver_path, get_who_goal_first, get_match_id, process_data, get_next_match_data, get_correct_page, match_already_exist, show_all_match, wait_till_appear_class
 
 
 
@@ -61,7 +61,7 @@ def crawl_specific_match(driver, subdriver, s_db, db, ligue_id, year1, year2):
                 team_2_name = re.sub(CLEANR, '', str(team_2_name.get_attribute("innerHTML")))
                 for m in range(0, 2):
                     team_name = subdiv.find_elements_by_class_name('event__participant')[m]
-                    if ligue_id == 42 or ligue_id == 35:
+                    if ligue_id == 42 or ligue_id == 35 or ligue_id == 26 or ligue_id == 27 or ligue_id == 13 or ligue_id == 25 or ligue_id == 29 or ligue_id == 36:
                         journee = subdiv.find_element_by_class_name('event__time')
                         journee  = re.sub(CLEANR, '', str(journee.get_attribute("innerHTML")))
                     if 'event__participant--home' in team_name.get_attribute('class'):
@@ -77,7 +77,7 @@ def crawl_specific_match(driver, subdriver, s_db, db, ligue_id, year1, year2):
                     except:
                         team_midterm_score = 0
                     team_id =  database_fetchone(cursor, "SELECT ID FROM teams WHERE TEAM_NAME = '%s'" % (process_data(team_name)))
-                    if match_already_exist(cursor, process_data(team_1_name), process_data(team_2_name), process_data(journee), year1, year2) == 1:
+                    if match_already_exist(cursor, ligue_id, process_data(team_1_name), process_data(team_2_name), process_data(journee), year1, year2) == 1:
                         print("Match dèjà enregistré")
                         return 0
                     match_url = 'https://www.flashscore.fr/match/' + subdiv.get_attribute('id').split('_', 2)[2] + '/#/resume-du-match/resume-du-match'
@@ -92,7 +92,7 @@ def crawl_specific_match(driver, subdriver, s_db, db, ligue_id, year1, year2):
                         print("N'insère rien")
                         continue
             else:
-                if ligue_id != 42 and ligue_id != 35:
+                if ligue_id != 42 and ligue_id != 35 and ligue_id != 26 and ligue_id != 27 and ligue_id != 13 and ligue_id != 25 and ligue_id != 29 and ligue_id != 36:
                     journee = subdiv.get_attribute('innerHTML')   
         db.commit()
         print("commit")

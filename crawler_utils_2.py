@@ -6,7 +6,7 @@ from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 
 from database_utils import *
-from crawler_utils_1 import chromedriver_path, get_who_goal_first, get_next_match_data, get_match_id, process_data, get_correct_page, show_all_match
+from crawler_utils_1 import get_os_chromedriver_path, chromedriver_path, get_who_goal_first, get_next_match_data, get_match_id, process_data, get_correct_page, show_all_match
 
 def get_data_json(data):
     config_text = ''
@@ -121,20 +121,24 @@ def crawl_all_ligues_matchs(years_limit, pays, ligues):
     configure_table(db, s_db, 'matchs', get_data_json('matchs_column'))
     ligues_id = database_fetchall(cursor, "SELECT ID FROM ligues")
     for i in range(0, len(ligues_id)):
-        year1 = 2021
-        year2 = 2022
-        for j in range(0, years_limit):
-            ligue_name = get_correct_page(driver, pays[i], ligues[i], year1, year2, j)
-            show_all_match(driver)
-            crawl_ligue_matchs(driver, subdriver, s_db, db, ligues_id[i], year1, year2)
-            year1 = year1 - 1
-            year2 = year2 - 1
+        crawl_ligue(driver, subdriver, db, s_db, pays[i], ligues[i], ligues_id[i], years_limit)
         db.commit()
         cursor.close()
         db.close()
         db = connect_to_database(s_db)
     driver.quit()
     subdriver.quit()
+
+def crawl_ligue(driver, subdriver, db, s_db, pays, ligues, ligue_id, years_limit):
+    year1 = 2021
+    year2 = 2022
+    for j in range(0, years_limit):
+        ligue_name = get_correct_page(driver, pays, ligues, year1, year2, j)
+        show_all_match(driver)
+        crawl_ligue_matchs(driver, subdriver, s_db, db, ligue_id, year1, year2)
+        year1 = year1 - 1
+        year2 = year2 - 1
+    
 
 def crawl_ligue_matchs(driver, subdriver, s_db, db, ligue_id, year1, year2):
     CLEANR = re.compile('<.*?>|&([a-z0-9]+|#[0-9]{1,6}|#x[0-9a-f]{1,6});')
@@ -155,7 +159,7 @@ def crawl_ligue_matchs(driver, subdriver, s_db, db, ligue_id, year1, year2):
                     match_id = get_match_id(cursor)
                     for m in range(0, 2):
                         team_name = subdiv.find_elements_by_class_name('event__participant')[m]
-                        if ligue_id == 42 or ligue_id == 35:
+                        if ligue_id == 42 or ligue_id == 35 or ligue_id == 26 or ligue_id == 27 or ligue_id == 13 or ligue_id == 25 or ligue_id == 29 or ligue_id == 36:
                             journee = subdiv.find_element_by_class_name('event__time')
                             journee  = re.sub(CLEANR, '', str(journee.get_attribute("innerHTML")))
                         if 'event__participant--home' in team_name.get_attribute('class'):
@@ -181,7 +185,7 @@ def crawl_ligue_matchs(driver, subdriver, s_db, db, ligue_id, year1, year2):
                 except:
                     print("ne peux pas ajouter le resultat")
             else:
-                if ligue_id != 42 and ligue_id != 35:
+                if ligue_id != 42 and ligue_id != 35 and ligue_id != 26 and ligue_id != 27 and ligue_id != 13 and ligue_id != 25 and ligue_id != 29 and ligue_id != 36:
                     journee = subdiv.get_attribute('innerHTML')   
         db.commit()
         print("commit")
@@ -201,3 +205,14 @@ def crawl_all_ligue_next_match(db):
         caldriver = webdriver.Chrome(chromedriver_path(CHROME_DRIVER_PATH), options=chrome_options)
         for i in range(0, len(pays)):
             get_next_match_data(caldriver, db, pays[i], ligue_name[i])
+
+
+""" s_db = Db()
+db = connect_to_database(s_db)
+CHROME_DRIVER_PATH = get_os_chromedriver_path()
+chrome_options = Options()
+chrome_options.add_argument("--headless")
+driver = webdriver.Chrome(chromedriver_path(CHROME_DRIVER_PATH), options=chrome_options)
+subdriver = webdriver.Chrome(chromedriver_path(CHROME_DRIVER_PATH), options=chrome_options)
+caldriver = webdriver.Chrome(chromedriver_path(CHROME_DRIVER_PATH), options=chrome_options)
+crawl_ligue(driver, subdriver, db, s_db, 'italie', 'serie-a', 26, 5) """
