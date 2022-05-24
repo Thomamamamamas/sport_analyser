@@ -10,6 +10,9 @@ from widget import *
 class App(tkinter.Tk):
     def __init__(self):
         super().__init__()
+        BIG_FRAME = 100
+        MEDIUM_FRAME = 75
+        SMALL_FRAME = 50
         self.title = "Sport Analyser"
         self.ligue_name_url = ["bundesliga", "2-bundesliga", "premier-league","championship","bundesliga","pro-league","vysshaya-liga","serie-a","primera-division","primera-a","1-hnl","superliga","premiership","liga-pro","laliga","laliga2","meistriliiga","veikkausliiga","ligue-1","ligue-2","super-league","otp-bank-liga","premier-division","besta-deild-karla","ligat-ha-al","serie-a","serie-b","j1-league","eliteserien","primera-division", "ekstraklasa","liga-portugal","liga-portugal-2","1-liga","liga-1","premier-league","fortuna-liga","prva-liga","allsvenskan","super-league","super-lig","mls"]
         self.pays_name_url = ["allemagne","allemagne","angleterre","angleterre","autriche","belgique","bielorussie","bresil","chili","colombie","croatie","danemark","ecosse","equateur", "espagne","espagne","estonie","finlande","france","france","grece","hongrie","irlande","islande","israel","italie","italie","japon","norvege", "paraguay","pologne","portugal","portugal","republique-tcheque","roumanie","russie","slovaquie","slovenie", "suede", "suisse","turquie","usa"]
@@ -33,7 +36,7 @@ class App(tkinter.Tk):
                 self.cursor = self.db.cursor()
                 place_option_menu(self)
                 place_result_frame(self)
-                for i in range(0, 10):
+                for i in range(0, 10):                
                     self.frame_column.append(tkinter.Frame(self.scrollable_frame))
                     self.frame_column[i].configure(bg='white')
                     self.frame_column[i].pack(side="left")
