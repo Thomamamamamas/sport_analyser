@@ -90,3 +90,24 @@ def database_fetchall(cursor, procedure):
     except:
         print("LA requete ne renvoie rien")
     return data
+
+
+def database_fetchall_everything(cursor, procedure):
+    data = []
+
+    cursor.execute(procedure)
+    try:
+        data = cursor.fetchall()
+    except:
+        print("LA requete ne renvoie rien")
+    return data
+
+def database_execute_many(cursor, procedure, procedure_data):
+    data = []
+    cursor.executemany(procedure, procedure_data)
+    try:
+        print(cursor.fetchmany(42))
+        data = cursor.fetchmany(42)
+    except:
+        print("LA requete ne renvoie rien")
+    return data

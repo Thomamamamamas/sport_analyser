@@ -38,6 +38,35 @@ def chromedriver_path(relative_path):
         base_path = os.path.dirname(__file__)
     return os.path.join(base_path, relative_path)
 
+def get_classement_correct_page(driver, pays, ligues, year1, year2, j):
+    ligue_name = ''
+
+    time.sleep(2)
+    if j == 0:
+        try:
+            url = 'https://www.flashscore.fr/football/%s/%s/classement' % (pays, ligues)
+            driver.get(url)
+            ligue_name = driver.find_element_by_class_name('heading__name').get_attribute('innerHTML').replace("'", '')
+        except:
+            url = 'https://www.flashscore.fr/football/%s/%s-%d-%d/classement' % (pays, ligues, year1, year2)
+            driver.get(url)
+            ligue_name = driver.find_element_by_class_name('heading__name').get_attribute('innerHTML').replace("'", '')
+    else:
+        try:
+            url = 'https://www.flashscore.fr/football/%s/%s-%d-%d/classement' % (pays, ligues, year1, year2)
+            driver.get(url)
+            ligue_name = driver.find_element_by_class_name('heading__name').get_attribute('innerHTML').replace("'", '')
+        except:
+            try:
+                url = 'https://www.flashscore.fr/football/%s/%s-%d/classement' % (pays, ligues, year2)
+                driver.get(url)
+                ligue_name = driver.find_element_by_class_name('heading__name').get_attribute('innerHTML').replace("'", '')
+            except:
+                url = 'https://www.flashscore.fr/football/%s/%s/classement' % (pays, ligues)
+                driver.get(url)
+                ligue_name = driver.find_element_by_class_name('heading__name').get_attribute('innerHTML').replace("'", '')
+    return ligue_name
+
 def get_correct_page(driver, pays, ligues, year1, year2, j):
     ligue_name = ''
 
@@ -94,13 +123,17 @@ def get_next_match_data(driver, db, pays, ligue_name, ligue_id):
                     print("Date du prochain match deja enregistrer")
                     return
                 teams_name.append(team_name)
+                adversaire_name = subdiv.find_element_by_class_name('event__participant--away')
+                adversaire_name = re.sub(CLEANR, '', str(adversaire_name.get_attribute("innerHTML")))
                 match_time = subdiv.find_element_by_class_name('event__time')
-                match_time = re.sub(CLEANR, '', str(match_time.get_attribute("innerHTML")))
+                match_time = re.sub(CLEANR, '', str(match_time.get_attribute("innerHTML")))   
                 coming_match_time = database_fetchone(cursor, "SELECT MATCH_TO_COMING FROM teams WHERE TEAM_NAME = '%s'" % (process_data(team_name)))
                 if coming_match_time != match_time:
                     print(team_name)
                     cursor.execute("UPDATE teams SET MATCH_TO_COMING = '%s' WHERE TEAM_NAME = '%s'" % (match_time, process_data(team_name)))
                     print("UPDATE teams SET MATCH_TO_COMING = '%s' WHERE TEAM_NAME = '%s'" % (match_time, process_data(team_name)))    
+                    cursor.execute("UPDATE teams SET ADVERSAIRE_B = '%s' WHERE TEAM_NAME = '%s'" % (process_data(adversaire_name), process_data(team_name)))
+                    print("UPDATE teams SET ADVERSAIRE_B = '%s' WHERE TEAM_NAME = '%s'" % (process_data(adversaire_name), process_data(team_name)))  
                 else:
                     print("Date du prochain match deja enregistrer")
                     break
@@ -184,7 +217,10 @@ def get_who_goal_first(driver, match_url, subdiv, team1_score, team1_midterm_sco
 
     if m == 0:
         team2_score = subdiv.find_elements_by_class_name('event__score')[1]
-        team2_score = int(re.sub(CLEANR, '', str(team2_score.get_attribute("innerHTML"))))
+        try:
+            team2_score = int(re.sub(CLEANR, '', str(team2_score.get_attribute("innerHTML"))))
+        except:
+            team2_score = 0
         try:
             team2_midterm_score = subdiv.find_elements_by_class_name('event__part--1')[1]
             team2_midterm_score = int(re.sub(CLEANR, '', str(team2_midterm_score.get_attribute("innerHTML"))).replace('(', '').replace(')', ''))

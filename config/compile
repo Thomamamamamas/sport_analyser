@@ -1,6 +1,6 @@
 MAC :
 Lancer la commande :
-pyinstaller -F -w --hidden-import=tkinter --hidden-import=tkinter.filedialog main.py
+pyinstaller -F -app --hidden-import=tkinter --hidden-import=tkinter.filedialog main.py
 
 WINDOWS :
 Lancer la commande :

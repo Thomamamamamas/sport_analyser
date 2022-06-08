@@ -108,11 +108,16 @@ def get_ligue_teams(driver, db, cursor, ligue_name, pays):
     return
 
 
-def crawl_all_ligues_matchs(years_limit, pays, ligues):
+def crawl_all_ligues_matchs(years_limit):
+    pays = get_data_json("pays")
+    ligues = get_data_json("ligues")
+    config = ConfigParser()
+    config.read("example.ini")
+    CHROME_DRIVER_PATH = config.get("chromedriver_mac", "path")
     chrome_options = Options()
     chrome_options.add_argument("--headless")
-    driver = webdriver.Chrome(options=chrome_options)
-    subdriver = webdriver.Chrome(options=chrome_options)
+    driver = webdriver.Chrome(chromedriver_path(CHROME_DRIVER_PATH), options=chrome_options)
+    subdriver = webdriver.Chrome(chromedriver_path(CHROME_DRIVER_PATH), options=chrome_options)
     s_db = Db()
     db = connect_to_database(s_db)
     cursor = db.cursor(buffered=True)
@@ -159,7 +164,7 @@ def crawl_ligue_matchs(driver, subdriver, s_db, db, ligue_id, year1, year2):
                     match_id = get_match_id(cursor)
                     for m in range(0, 2):
                         team_name = subdiv.find_elements_by_class_name('event__participant')[m]
-                        if ligue_id == 42 or ligue_id == 35 or ligue_id == 26 or ligue_id == 27 or ligue_id == 13 or ligue_id == 25 or ligue_id == 29 or ligue_id == 36:
+                        if ligue_id == 42 or ligue_id == 18 or ligue_id == 35 or ligue_id == 26 or ligue_id == 27 or ligue_id == 13 or ligue_id == 25 or ligue_id == 29 or ligue_id == 36:
                             journee = subdiv.find_element_by_class_name('event__time')
                             journee  = re.sub(CLEANR, '', str(journee.get_attribute("innerHTML")))
                         if 'event__participant--home' in team_name.get_attribute('class'):
@@ -176,16 +181,13 @@ def crawl_ligue_matchs(driver, subdriver, s_db, db, ligue_id, year1, year2):
                             team_midterm_score = 0
                         team_id =  database_fetchone(cursor, "SELECT ID FROM teams WHERE TEAM_NAME = '%s'" % (process_data(team_name)))
                         match_url = 'https://www.flashscore.fr/match/' + subdiv.get_attribute('id').split('_', 2)[2] + '/#/resume-du-match/resume-du-match'
-                        if domicile == 1:
-                            goal_first = get_who_goal_first(subdriver, match_url, subdiv, team_score, team_midterm_score, m)
-                        else:
-                            goal_first = 0
-                        cursor.execute("INSERT INTO matchs(ID, LIGUE_ID, YEAR1, YEAR2, JOURNEE, TEAM_ID, TEAM_NAME, GOAL, GOAL_MIDTERM, DOMICILE, GOAL_FIRST) VALUES (%d, %d , %d, %d, '%s', %d, '%s', %d, %d, %d, %d)" % (match_id, ligue_id, year1, year2, process_data(journee), team_id, process_data(team_name), team_score, team_midterm_score, domicile, goal_first))
-                        print("INSERT INTO matchs(ID, LIGUE_ID, YEAR1, YEAR2, JOURNEE TEAM_ID, TEAM_NAME, GOAL, GOAL_MIDTERM, DOMICILE, GOAL_FIRST) VALUES (%d, %d , %d, %d, '%s', %d, '%s', %d, %d, %d, %d)" % (match_id, ligue_id, year1, year2, process_data(journee), team_id, process_data(team_name), team_score, team_midterm_score, domicile, goal_first))
+                        t_goal_first = get_who_goal_first(subdriver, match_url, subdiv, team_score, team_midterm_score, m)
+                        cursor.execute("INSERT INTO matchs(ID, LIGUE_ID, YEAR1, YEAR2, JOURNEE, TEAM_ID, TEAM_NAME, GOAL, GOAL_MIDTERM, DOMICILE, GOAL_FIRST) VALUES (%d, %d , %d, %d, '%s', %d, '%s', %d, %d, %d, %d)" % (match_id, ligue_id, year1, year2, process_data(journee), team_id, process_data(team_name), team_score, team_midterm_score, domicile, t_goal_first))
+                        print("INSERT INTO matchs(ID, LIGUE_ID, YEAR1, YEAR2, JOURNEE TEAM_ID, TEAM_NAME, GOAL, GOAL_MIDTERM, DOMICILE, GOAL_FIRST) VALUES (%d, %d , %d, %d, '%s', %d, '%s', %d, %d, %d, %d)" % (match_id, ligue_id, year1, year2, process_data(journee), team_id, process_data(team_name), team_score, team_midterm_score, domicile, t_goal_first))
                 except:
                     print("ne peux pas ajouter le resultat")
             else:
-                if ligue_id != 42 and ligue_id != 35 and ligue_id != 26 and ligue_id != 27 and ligue_id != 13 and ligue_id != 25 and ligue_id != 29 and ligue_id != 36:
+                if ligue_id != 42 and ligue_id != 18 and ligue_id != 35 and ligue_id != 26 and ligue_id != 27 and ligue_id != 13 and ligue_id != 25 and ligue_id != 29 and ligue_id != 36:
                     journee = subdiv.get_attribute('innerHTML')   
         db.commit()
         print("commit")
@@ -199,20 +201,26 @@ def crawl_all_ligue_next_match(db):
         ligue_name = get_data_json("ligues")
         config = ConfigParser()
         config.read("example.ini")
-        CHROME_DRIVER_PATH = config.get("chromedriver", "path")
+        CHROME_DRIVER_PATH = config.get("chromedriver_mac", "path")
         chrome_options = Options()
         chrome_options.add_argument("--headless")
         caldriver = webdriver.Chrome(chromedriver_path(CHROME_DRIVER_PATH), options=chrome_options)
         for i in range(0, len(pays)):
             get_next_match_data(caldriver, db, pays[i], ligue_name[i])
 
+def __main__():
+    s_db = Db()
+    db = connect_to_database(s_db)
+    pays = 'finlande'
+    ligues = 'veikkausliiga'
+    ligue_id = 18
+    years_limit = 5
+    config = ConfigParser()
+    config.read("example.ini")
+    CHROME_DRIVER_PATH = config.get("chromedriver_mac", "path")
+    driver = webdriver.Chrome(chromedriver_path(CHROME_DRIVER_PATH))
+    subdriver = webdriver.Chrome(chromedriver_path(CHROME_DRIVER_PATH))
+    crawl_ligue(driver, subdriver, db, s_db, pays, ligues, ligue_id, years_limit)
 
-""" s_db = Db()
-db = connect_to_database(s_db)
-CHROME_DRIVER_PATH = get_os_chromedriver_path()
-chrome_options = Options()
-chrome_options.add_argument("--headless")
-driver = webdriver.Chrome(chromedriver_path(CHROME_DRIVER_PATH), options=chrome_options)
-subdriver = webdriver.Chrome(chromedriver_path(CHROME_DRIVER_PATH), options=chrome_options)
-caldriver = webdriver.Chrome(chromedriver_path(CHROME_DRIVER_PATH), options=chrome_options)
-crawl_ligue(driver, subdriver, db, s_db, 'italie', 'serie-a', 26, 5) """
+if __name__ == '__main__':
+    __main__()

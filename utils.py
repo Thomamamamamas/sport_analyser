@@ -1,154 +1,170 @@
 from database_utils import *
 
-class Day_goal():
-    def __init__(self):
-        self.domicile_journee = []
-        self.domicile_match = []
-
-
-def get_taux_historique(db, team_id):
-    try:
-        cursor = db.cursor()
-        domicile_match = database_fetchall(cursor, "SELECT GOAL_FIRST FROM matchs WHERE TEAM_ID = %d AND DOMICILE = 1" % (team_id))
-        total_match = len(domicile_match)
-        total_goal_first = 0
-
-        for i in range(0, total_match):
-            if domicile_match[i] == 1:
-                total_goal_first = total_goal_first + 1
-        return round((total_goal_first / total_match) * 100, 2)
-    except:
-        return 0
-
-def get_taux_actual_season(db, team_id, year1, year2):
-    try:
-        cursor = db.cursor()
-        domicile_match = database_fetchall(cursor, "SELECT GOAL_FIRST FROM matchs WHERE TEAM_ID = %d AND DOMICILE = 1 AND YEAR1 = %d AND YEAR2 = %d" % (team_id, year1, year2))
-        total_match = len(domicile_match)
-        total_goal_first = 0
-
-        for i in range(0, total_match):
-            if domicile_match[i] == 1:
-                total_goal_first = total_goal_first + 1
-        return round((total_goal_first / total_match) * 100, 2)
-    except:
-        return 0
-
-def reverse_sort_goal_by_day(s_dg):
-    for j in range(1, len(s_dg.domicile_match)):
-        tmp = s_dg.domicile_journee[j]
-        tmp2 = s_dg.domicile_match[j]
-        i = j - 1
-        while i >= 0 and s_dg.domicile_journee[i] > tmp:
-            s_dg.domicile_journee[i + 1] = s_dg.domicile_journee[i]
-            s_dg.domicile_match[i + 1] = s_dg.domicile_match[i]
-            i = i - 1
-        s_dg.domicile_journee[i + 1] = tmp
-        s_dg.domicile_match[i + 1] = tmp2
-    s_dg.domicile_journee.reverse()
-    s_dg.domicile_match.reverse()
-    
-def get_domicile_journee(s_dg, ligue_id):
-    for i in range(0, len(s_dg.domicile_journee)):
-        if ligue_id != 42 and ligue_id != 35 and ligue_id != 26 and ligue_id != 27 and ligue_id != 13 and ligue_id != 25 and ligue_id != 29 and ligue_id != 36:
-            if s_dg.domicile_journee[i] != '' and s_dg.domicile_journee[i] != None:
-                s_dg.domicile_journee[i] = str(s_dg.domicile_journee[i]).replace("Journée ", '')
-                s_dg.domicile_journee[i] = str(s_dg.domicile_journee[i]).replace("1/8 de finale", '97')
-                s_dg.domicile_journee[i] = str(s_dg.domicile_journee[i]).replace("Quarts de finale", '')
-                s_dg.domicile_journee[i] = str(s_dg.domicile_journee[i]).replace("Demi-finales", '99')
-                s_dg.domicile_journee[i] = str(s_dg.domicile_journee[i]).replace("Finale", '100')
-                if s_dg.domicile_journee[i] != '':
-                    s_dg.domicile_journee[i] = int(s_dg.domicile_journee[i])
-                else:
-                    s_dg.domicile_journee[i] = 0
-            else:
-                s_dg.domicile_journee[i] = 0
-        else:
-            if s_dg.domicile_journee[i] != '' and s_dg.domicile_journee[i] != None:
-                try:
-                    s_dg.domicile_journee[i] = str(s_dg.domicile_journee[i]).split(' ', 2)[0]
-                    s_dg.domicile_journee[i] = str(s_dg.domicile_journee[i][:len(s_dg.domicile_journee[i]) - 1])
-                    s_dg.domicile_journee[i] = str(s_dg.domicile_journee[i]).split('.', 2)[1] + '.' + str(s_dg.domicile_journee[i]).split('.', 2)[0]
-                    s_dg.domicile_journee[i] = float(s_dg.domicile_journee[i])
-                    if (ligue_id != 42) and s_dg.domicile_journee[i] >= 7:
-                        s_dg.domicile_journee[i] = s_dg.domicile_journee[i] - 12
-                except:
-                    s_dg.domicile_journee[i] = 0
-            else:
-                s_dg.domicile_journee[i] = 0
-    
-def get_actual_serie(s_dg):
-    try:
-        
-        actual_serie = []
-        
-        for i in range(0, 5):
-            if i == len(s_dg.domicile_match):
+def reverse_sort_goal_by_day(app, n):
+    for m in range(0, 5):
+        for j in range(1, len(app.lta[n].t_home_day_sorted[m])):
+            try:
+                tmp = app.lta[n].t_home_day_sorted[m][j]
+                tmp2 = app.lta[n].t_home_goal_first[m][j]
+                i = j - 1
+                while i >= 0 and app.lta[n].t_home_day_sorted[m][i] > tmp:
+                    app.lta[n].t_home_day_sorted[m][i + 1] = app.lta[n].t_home_day_sorted[m][i]
+                    app.lta[n].t_home_goal_first[m][i + 1] = app.lta[n].t_home_goal_first[m][i]
+                    i = i - 1
+                app.lta[n].t_home_day_sorted[m][i + 1] = tmp
+                app.lta[n].t_home_goal_first[m][i + 1] = tmp2
+            except:
                 break
-            if s_dg.domicile_match[i] != 0:
-                actual_serie.append(1)
+        app.lta[n].t_home_day_sorted[m].reverse()
+        app.lta[n].t_home_goal_first[m].reverse()
+    for m in range(0, 5):
+        for j in range(1, len(app.lta[n].a_ext_day_sorted[m])):
+            try:
+                tmp = app.lta[n].a_ext_day_sorted[m][j]
+                tmp2 = app.lta[n].a_ext_goal_first[m][j]
+                i = j - 1
+                while i >= 0 and app.lta[n].a_ext_day_sorted[m][i] > tmp:
+                    app.lta[n].a_ext_day_sorted[m][i + 1] = app.lta[n].a_ext_day_sorted[m][i]
+                    app.lta[n].a_ext_goal_first[m][i + 1] = app.lta[n].a_ext_goal_first[m][i]
+                    i = i - 1
+                app.lta[n].a_ext_day_sorted[m][i + 1] = tmp
+                app.lta[n].a_ext_goal_first[m][i + 1] = tmp2
+            except:
+                break
+        app.lta[n].a_ext_day_sorted[m].reverse()
+        app.lta[n].a_ext_goal_first[m].reverse()
+    
+def process_journee(base_journee, ligue_id):
+    if ligue_id != 42 and ligue_id != 18 and ligue_id != 35 and ligue_id != 26 and ligue_id != 27 and ligue_id != 13 and ligue_id != 25 and ligue_id != 29 and ligue_id != 36:
+        if base_journee != '' and base_journee != None:
+            journee = str(base_journee).replace("Journée ", '')
+            journee = str(journee).replace("1/8 de finale", '97')
+            journee = str(journee).replace("Quarts de finale", '')
+            journee = str(journee).replace("Demi-finales", '99')
+            journee = str(journee).replace("Finale", '100')
+            if journee != '':
+                journee = int(journee)
             else:
-                actual_serie.append(0)
-        actual_serie.reverse()
-        return actual_serie
-    except:
-        actual_serie.reverse()
-        return actual_serie
+                journee = 0
+        else:
+            journee = 0
+    else:
+        if base_journee != '' and base_journee != None:
+            try:
+                journee = str(base_journee).split(' ', 2)[0]
+                journee = str(journee[:len(journee) - 1])
+                journee = str(journee).split('.', 2)[1] + '.' + str(journee).split('.', 2)[0]
+                journee = float(journee)
+                if (ligue_id != 42) and journee >= 7:
+                    journee = journee - 12
+            except:
+                journee = 0
+        else:
+            journee = 0
+    return journee
 
-def get_longest_serie_without_goal(cursor, s_dg, year1, year2, ligue_id, team_id):
-    res = 0
-    tmp = 0
+
+def get_all_match_winner_team_a_contre_team_b(app, n):
+    for m in range(0, 5):
+        app.lta[n].t_vs_a_winner.append([])
+        for i in range(0, len(app.lta[n].t_match_id[m])):
+            for j in range(0, len(app.lta[n].a_match_id[m])):
+                if app.lta[n].a_match_id[m][j] == app.lta[n].t_match_id[m][i]:
+                    if app.lta[n].t_match_res[m][i] > app.lta[n].a_match_res[m][j]:
+                        app.lta[n].t_vs_a_winner[m].append(1)
+                    elif app.lta[n].t_match_res[m][i] < app.lta[n].a_match_res[m][j]:
+                        app.lta[n].t_vs_a_winner[m].append(-1)
+                    else:
+                        app.lta[n].t_vs_a_winner[m].append(0)
+
+def get_all_match_team_a_contre_team_b(app, n):
+    for m in range(0, 5):
+        app.lta[n].t_vs_a_match_id.append([])
+        app.lta[n].t_vs_a_day_sorted.append([])
+        app.lta[n].t_vs_a_goal_first.append([])
+        for i in range(0, len(app.lta[n].t_match_id[m])):
+            for j in range(0, len(app.lta[n].a_match_id[m])):
+                if app.lta[n].a_match_id[m][j] == app.lta[n].t_match_id[m][i] and process_journee(app.lta[n].t_match_day[m][i], app.lta[n].ligue_id) not in app.lta[n].t_vs_a_day_sorted[m]:
+                    app.lta[n].t_vs_a_match_id[m].append(app.lta[n].t_match_id[m][i])
+                    app.lta[n].t_vs_a_day_sorted[m].append(process_journee(app.lta[n].t_match_day[m][i], app.lta[n].ligue_id))
+                    app.lta[n].t_vs_a_goal_first[m].append(app.lta[n].t_match_goalfirst[m][i])
+
+def get_all_match_domicile(app, n):
     for i in range(0, 5):
-        s_dg.domicile_match = database_fetchall(cursor, "SELECT GOAL_FIRST FROM matchs WHERE TEAM_ID = %d AND DOMICILE = 1 AND YEAR1 = %d AND YEAR2 = %d" % (team_id, year1, year2))
-        s_dg.domicile_journee = database_fetchall(cursor, "SELECT JOURNEE FROM matchs WHERE TEAM_ID = %d AND DOMICILE = 1 AND YEAR1 = %d AND YEAR2 = %d" % (team_id, year1, year2))
-        get_domicile_journee(s_dg, ligue_id)
-        reverse_sort_goal_by_day(s_dg)
-        for j in range(0, len(s_dg.domicile_journee)):
-            if j == len(s_dg.domicile_match):
-                break
-            if s_dg.domicile_match[j] == 0:
-                tmp = tmp + 1
-            else:
-                if tmp > res:
-                    res = tmp
-                tmp = 0
-        year1 = year1 - 1
-        year2 = year2 - 1
-        s_dg.domicile_match.clear()
-        s_dg.domicile_journee.clear()
-    return res
+        app.lta[n].t_home_day_sorted.append([])
+        app.lta[n].t_home_goal_first.append([])
+        for j in range(0, len(app.lta[n].t_match_home[i])):
+            if app.lta[n].t_match_home[i][j] == 1 and process_journee(app.lta[n].t_match_day[i][j], app.lta[n].ligue_id) not in app.lta[n].t_home_day_sorted[i]:
+                app.lta[n].t_home_day_sorted[i].append(process_journee(app.lta[n].t_match_day[i][j], app.lta[n].ligue_id))
+                app.lta[n].t_home_goal_first[i].append(app.lta[n].t_match_goalfirst[i][j])
 
-def calculate_actual_serie(actual_serie):
-    res = 0
+def get_all_match_exterieur(app, n):
+    for i in range(0, 5):
+        app.lta[n].a_ext_day_sorted.append([])
+        app.lta[n].a_ext_goal_first.append([])
+        for j in range(0, len(app.lta[n].a_match_home[i])):
+            if app.lta[n].a_match_home[i][j] == 0 and process_journee(app.lta[n].a_match_day[i][j], app.lta[n].ligue_id) not in app.lta[n].a_ext_day_sorted[i]:
+                app.lta[n].a_ext_day_sorted[i].append(process_journee(app.lta[n].a_match_day[i][j], app.lta[n].ligue_id))
+                app.lta[n].a_ext_goal_first[i].append(app.lta[n].a_match_goalfirst[i][j])
 
-    for i in range(len(actual_serie) - 1, -1, -1):
-        if actual_serie[i] == 0:
-            res = res + 1
-        else:
-            break
-    return res
+def get_all_match_domicile_team_a_contre_team_b(app, n):
+    for m in range(0, 5):
+        app.lta[n].t_vs_a_home_day_sorted.append([])
+        app.lta[n].t_vs_a_home_goal_first.append([])
+        for i in range(0, len(app.lta[n].t_match_id[m])):
+            if app.lta[n].t_match_home[m][i] == 1:
+                for j in range(0, len(app.lta[n].a_match_id[m])):
+                    if app.lta[n].a_match_id[m][j] == app.lta[n].t_match_id[m][i] and process_journee(app.lta[n].t_match_day[m][i], app.lta[n].ligue_id) not in  app.lta[n].t_vs_a_home_day_sorted[m]:
+                        app.lta[n].t_vs_a_home_day_sorted[m].append(process_journee(app.lta[n].t_match_day[m][i], app.lta[n].ligue_id))
+                        app.lta[n].t_vs_a_home_goal_first[m].append(app.lta[n].t_match_goalfirst[m][i])
 
-def get_taux_x_no_goal(cursor, s_dg,  year1, year2, ligue_id, team_id, x):
-    try:
-        total_match = 0
-        total_goal_first = 0
-        tmp = 0
-        for j in range(0, 5):
-            s_dg.domicile_match = database_fetchall(cursor, "SELECT GOAL_FIRST FROM matchs WHERE TEAM_ID = %d AND DOMICILE = 1 AND YEAR1 = %d AND YEAR2 = %d" % (team_id, year1, year2))
-            s_dg.domicile_journee = database_fetchall(cursor, "SELECT JOURNEE FROM matchs WHERE TEAM_ID = %d AND DOMICILE = 1 AND YEAR1 = %d AND YEAR2 = %d" % (team_id, year1, year2))
-            get_domicile_journee(s_dg, ligue_id)
-            reverse_sort_goal_by_day(s_dg)
-            tmp_total_match = len(s_dg.domicile_match)
-            total_match = tmp_total_match + total_match
-            for i in range(0, tmp_total_match):
-                if s_dg.domicile_match[i] == 0:
-                    tmp = tmp + 1
-                    if tmp == x:
-                        total_goal_first = total_goal_first + 1
-                else:
-                    tmp = 0
-            year1 = year1 - 1
-            year2 = year2 - 1
-        return round((total_goal_first / total_match) * 100, 2)
-    except:
-        return 0
+def get_stats(cursor, app, n, m):
+    total_team_score = 0
+    total_adversaire_score = 0
+    a_match_res = 0
+    for i in range(0, len(app.lta[n].t_match_id[m])):
+        match_is_against_b = 0
+        for j in range(0, len(app.lta[n].a_match_id[m])):
+            if app.lta[n].a_match_id[m][j] == app.lta[n].t_match_id[m][i]:
+                match_is_against_b = 1
+                app.lta[n].team_against_adversaire_matchs_joues = app.lta[n].team_against_adversaire_matchs_joues + 1
+                if app.lta[n].t_match_res[m][i] > app.lta[n].a_match_res[m][j]:
+                    app.lta[n].team_against_adversaire_victoire = app.lta[n].team_against_adversaire_victoire + 1
+                elif app.lta[n].t_match_res[m][i] < app.lta[n].a_match_res[m][j]:
+                    app.lta[n].adversaire_victoire = app.lta[n].team_against_adversaire_victoire + 1
+                elif app.lta[n].t_match_res[m][i] == app.lta[n].a_match_res[m][j]:
+                    app.lta[n].team_against_adversaire_nul = app.lta[n].team_against_adversaire_nul + 1
+                a_match_res == app.lta[n].a_match_res[m][j]
+                total_adversaire_score = total_adversaire_score + app.lta[n].a_match_res[m][j]
+        if match_is_against_b == 0:
+            a_match_res = database_fetchone(cursor, "SELECT GOAL FROM matchs WHERE ID = %d AND TEAM_ID != %d" % (app.lta[n].t_match_id[m][i], app.lta[n].team_id))
+        if app.lta[n].t_match_res[m][i] > a_match_res:
+                app.lta[n].team_victoire = app.lta[n].team_victoire + 1
+        elif app.lta[n].t_match_res[m][i] < a_match_res:
+                app.lta[n].team_defaite = app.lta[n].team_defaite + 1
+        elif app.lta[n].t_match_res[m][i] == a_match_res:
+                app.lta[n].team_nul = app.lta[n].team_nul + 1
+        total_team_score =  total_team_score + app.lta[n].t_match_res[m][i]
+    app.lta[n].team_matchs_joues = len(app.lta[n].t_match_id[m])
+    if len(app.lta[n].t_match_id[m]) != 0:
+        app.lta[n].team_moyenne_match_goals  = round(total_team_score / len(app.lta[n].t_match_id[m]), 2)
+    if app.lta[n].team_against_adversaire_matchs_joues != 0:
+        app.lta[n].team_against_adversaire_moyenne_match_goals  = round(total_adversaire_score / app.lta[n].team_against_adversaire_matchs_joues, 2)
+
+def get_moyenne_goals(app, n):
+    total_match = 0
+    total_match_against_adversaire = 0
+    res = 0 
+    res_against_adversaire = 0
+    for m in range(0, 5):
+        for i in range(0, len(app.lta[n].t_match_id[m])):
+            res = app.lta[n].t_match_res[m][i] + res 
+            total_match = total_match + 1
+            for j in range(0, len(app.lta[n].a_match_id[m])):
+                if app.lta[n].a_match_id[m][j] == app.lta[n].t_match_id[m][i]:
+                    res_against_adversaire = res_against_adversaire + app.lta[n].t_match_res[m][i]
+                    total_match_against_adversaire = total_match_against_adversaire + 1
+    if total_match != 0:
+        app.lta[n].moyenne_goals = round(res / total_match, 2)
+    if total_match_against_adversaire != 0 :
+        app.lta[n].team_against_adversaire_moyenne_goals = round(res_against_adversaire / total_match_against_adversaire, 2)
