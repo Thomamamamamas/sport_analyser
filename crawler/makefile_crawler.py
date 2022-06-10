@@ -1,17 +1,22 @@
 import os
+import platform
 import sys
 import shutil
 
-data_spec_file = "\tdatas=[('config/*', '.'), ('driver/*', '.')],\n"
-import_spec_file = ["shutil.copytree('config', '{0}/config/'.format(DISTPATH))\n",
-                    "shutil.copytree('driver', '{0}/driver/'.format(DISTPATH))\n"]
+data_spec_file = "\tdatas=[('config/*', '.')],\n"
+import_spec_file = ["shutil.copytree('config', '{0}/config/'.format(DISTPATH))\n"]
 
+str_prefix = ''
+str_exe = ''
+if platform.system() == 'Windows':
+    str_prefix = 'python'
+    str_exe = '.exe'
 
 def all():
     fclean()
-    os.system("pyinstaller -F -app --hidden-import=tkinter --hidden-import=tkinter.filedialog crawler_main.py --name crawler_sport_analyse")
+    os.system("%s pyinstaller%s main.py --onefile  --add-binary 'driver\chromedriver.exe;driver\' --name crawler_sport_analyse" % (str_prefix, str_exe))
     modify_spec_file()
-    os.system("pyinstaller --clean crawler_sport_analyse.spec")
+    os.system("%s pyinstaller%s --clean crawler_sport_analyse.spec")
 
 def fclean():
     try:
