@@ -1,6 +1,6 @@
 MAC :
 Lancer la commande :
-pyinstaller -F -app --hidden-import=tkinter --hidden-import=tkinter.filedialog main.py
+pyinstaller -F -app --hidden-import=tkinter --hidden-import=tkinter.filedialog main.py  --add-data "config/*:."  --name sport_analyse
 
 WINDOWS :
 Lancer la commande :
@@ -9,7 +9,8 @@ pyinstaller main.py --onefile  --add-binary "driver\chromedriver.exe;driver\" --
 A la fin du fichier .spec, pour ajouter le fichier "example.ini":
 
 import shutil
-shutil.copyfile('example.ini', '{0}/example.ini'.format(DISTPATH))
+shutil.copytree('config', '{0}/config/'.format(DISTPATH))
+shutil.copytree('images', '{0}/images/'.format(DISTPATH))
 
 Puis lancer la commande :
 pyinstaller --clean sport_analyse.spec

@@ -1,11 +1,12 @@
 from PIL import Image,ImageTk
 import tkinter
+from utils import resource_path
 
 def check_if_image_already_create(app, file_name, i):
     if i == 0:
         if file_name not in app.ligue_logo_file_name:
             print("Sauvegarde image ligue")
-            img = Image.open(file_name).convert('RGBA')
+            img = Image.open(resource_path(file_name)).convert('RGBA')
             app.ligue_logo_file_name.append(file_name)
             app.ligue_logo.append(img)
         else:
@@ -17,7 +18,7 @@ def check_if_image_already_create(app, file_name, i):
     elif i == 1:
         if file_name not in app.team_logo_file_name:
             print("Sauvegarde image team")
-            img = Image.open(file_name).convert('RGBA')
+            img = Image.open(resource_path(file_name)).convert('RGBA')
             app.team_logo_file_name.append(file_name)
             app.team_logo.append(img)
         else:

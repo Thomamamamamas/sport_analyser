@@ -5,7 +5,7 @@ from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 
 from database_utils import *
-from crawler_utils_1 import get_os_chromedriver_path, chromedriver_path, get_who_goal_first, get_match_id, process_data, get_next_match_data, get_classement_correct_page, get_correct_page, match_already_exist, show_all_match, wait_till_appear_class
+from crawler_utils_1 import get_os_chromedriver_path, resource_path, get_who_goal_first, get_match_id, process_data, get_next_match_data, get_classement_correct_page, get_correct_page, match_already_exist, show_all_match, wait_till_appear_class
 from crawler_utils_2 import get_data_json
 
 def crawl_specific_ligue_matchs(pays, ligue_name, ligue_id):
@@ -16,9 +16,9 @@ def crawl_specific_ligue_matchs(pays, ligue_name, ligue_id):
     CHROME_DRIVER_PATH = get_os_chromedriver_path()
     chrome_options = Options()
     chrome_options.add_argument("--headless")
-    driver = webdriver.Chrome(chromedriver_path(CHROME_DRIVER_PATH), options=chrome_options)
-    subdriver = webdriver.Chrome(chromedriver_path(CHROME_DRIVER_PATH), options=chrome_options)
-    caldriver = webdriver.Chrome(chromedriver_path(CHROME_DRIVER_PATH), options=chrome_options)
+    driver = webdriver.Chrome(resource_path(CHROME_DRIVER_PATH), options=chrome_options)
+    subdriver = webdriver.Chrome(resource_path(CHROME_DRIVER_PATH), options=chrome_options)
+    caldriver = webdriver.Chrome(resource_path(CHROME_DRIVER_PATH), options=chrome_options)
     s_db = Db()
     db = connect_to_database(s_db)
     year1 = 2021
@@ -44,7 +44,7 @@ def crawl_classement(db, pays, ligue_name, ligue_id, year1, year2):
     CHROME_DRIVER_PATH = get_os_chromedriver_path()
     chrome_options = Options()
     chrome_options.add_argument("--headless")
-    driver = webdriver.Chrome(chromedriver_path(CHROME_DRIVER_PATH), options=chrome_options)
+    driver = webdriver.Chrome(resource_path(CHROME_DRIVER_PATH), options=chrome_options)
     if db:
         cursor = db.cursor()
         get_classement_correct_page(driver, pays, ligue_name, year1, year2, 0)
@@ -152,7 +152,7 @@ def crawl_cotes():
     CHROME_DRIVER_PATH = get_os_chromedriver_path()
     chrome_options = Options()
     chrome_options.add_argument("--headless")
-    driver = webdriver.Chrome(chromedriver_path(CHROME_DRIVER_PATH), options=chrome_options)
+    driver = webdriver.Chrome(resource_path(CHROME_DRIVER_PATH), options=chrome_options)
     s_db = Db()
     db = connect_to_database(s_db)
     if db:
@@ -165,7 +165,7 @@ def crawl_cotes():
         driver.execute_script("arguments[0].click();", element_click)
         time.sleep(2)
         cursor.execute("UPDATE teams SET COTE_MATCH = ''")
-        for i in range(0, 10):
+        for i in range(0, 31):
             if i != 0 :
                 try:
                     calendar_click = driver.find_element_by_class_name('calendar__navigation--tomorrow')

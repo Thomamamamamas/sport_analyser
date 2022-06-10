@@ -1,4 +1,25 @@
+import sys
+import json
+import os
 from database_utils import *
+
+def get_data_json(data):
+    config_text = ''
+    with open(resource_path('config/config.json'), 'r') as config_json:
+        for line in config_json:
+            config_text = config_text + line
+        config_json.close()
+    json_dict = json.loads(config_text)
+    return json_dict[data]
+
+def resource_path(relative_path):
+    try:
+        base_path = sys._MEIPASS
+        while '/' in relative_path:
+            relative_path = relative_path.split('/', 2)[1]
+    except Exception:
+        base_path = os.path.dirname(__file__)
+    return os.path.join(base_path, relative_path)
 
 def reverse_sort_goal_by_day(app, n):
     for m in range(0, 5):
@@ -165,6 +186,6 @@ def get_moyenne_goals(app, n):
                     res_against_adversaire = res_against_adversaire + app.lta[n].t_match_res[m][i]
                     total_match_against_adversaire = total_match_against_adversaire + 1
     if total_match != 0:
-        app.lta[n].moyenne_goals = round(res / total_match, 2)
+        app.lta[n].team_moyenne_goals = round(res / total_match, 2)
     if total_match_against_adversaire != 0 :
         app.lta[n].team_against_adversaire_moyenne_goals = round(res_against_adversaire / total_match_against_adversaire, 2)

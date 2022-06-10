@@ -12,47 +12,60 @@ def get_team_prochain_match_df(prochain_match):
 
 def add_team_to_dataframe(app, team):
     dict_team = {
-        "id": team.team_id, "taux_saison": team.taux_saison, "match_joues": team.team_matchs_joues, "victoire": team.team_victoire, "nul": team.team_nul, 
-    "defaite": team.team_defaite, "team_moyenne_match_goals": team.team_moyenne_match_goals, "moyenne_goals": team.team_moyenne_goals, 
-    "taux_2x_no_goal": team.taux_2x_no_goal, "taux_3x_no_goal": team.taux_3x_no_goal, "adversaire_taux_saison": team.adversaire_taux_saison,
-    "taux_historique": team.taux_historique, "prochain_match": get_team_prochain_match_df(team.prochain_match), 
-    "adversaire_taux_historique": team.adversaire_taux_historique, "classement": team.classement, "serie_a_contre_b": team.serie_a_contre_b
+        "id": team.team_id,"taux_historique": team.taux_historique, "taux_saison": team.taux_saison, "serie": team.actual_serie, "record": team.longest_serie,
+        "taux_2x_no_goal": team.taux_2x_no_goal, "taux_3x_no_goal": team.taux_3x_no_goal, "prochain_match": get_team_prochain_match_df(team.prochain_match), 
+        "adversaire_taux_historique": team.adversaire_taux_historique,  "adversaire_taux_saison": team.adversaire_taux_saison,
+        "classement": team.classement, "serie_a_contre_b": team.serie_a_contre_b, "taux_a_contre_b": team.taux_historique_a_contre_b, 
+        "serie_a_contre_b": team.actual_serie_a_contre_b, "record_a_contre_b": team.longest_serie_a_contre_b,
+        "match_joues": team.team_matchs_joues, "victoire": team.team_victoire, "nul": team.team_nul, "defaite": team.team_defaite, 
+        "team_moyenne_match_goals": team.team_moyenne_match_goals, "team_moyenne_goals": team.team_moyenne_goals
     }
     app.df = app.df.append(dict_team, ignore_index=True)
 
 def get_dataframe_sort_values(values):
     sort_values = []
     for i in range(0, len(values)):
+        if values[i] == 0:
+            sort_values.append("taux_historique")
         if values[i] == 1:
             sort_values.append("taux_saison")
-        elif values[i] == 2:
-            sort_values.append("match_joues")
-        elif values[i] == 3:
-            sort_values.append("victoire")
-        elif values[i] == 4:
-            sort_values.append("nul")
-        elif values[i] == 5:
-            sort_values.append("defaite")
-        elif values[i] == 6:
-            sort_values.append("team_moyenne_goals")
-        elif values[i] == 7:
-            sort_values.append("moyenne_goals")
-        elif values[i] == 8:
+        if values[i] == 2:
+            sort_values.append("serie")
+        if values[i] == 3:
+            sort_values.append("record")
+        if values[i] == 4:
             sort_values.append("taux_2x_no_goal")
-        elif values[i] == 9:
-            sort_values.append("taux_3x_no_goals")
-        elif values[i] == 10:
-            sort_values.append("adversaire_taux_saison")
-        elif values[i] == 11:
-            sort_values.append("taux_historique")
-        elif values[i] == 12:
+        if values[i] == 5:
+            sort_values.append("taux_3x_no_goal")
+        if values[i] == 6:
             sort_values.append("prochain_match")
-        elif values[i] == 13:
+        if values[i] == 7:
             sort_values.append("adversaire_taux_historique")
-        elif values[i] == 14:
+        if values[i] == 8:
+            sort_values.append("adversaire_taux_saison")
+        if values[i] == 9:
             sort_values.append("classement")
-        elif values[i] == 15:
+        if values[i] == 10:
             sort_values.append("serie_a_contre_b")
+        if values[i] == 11:
+            sort_values.append("taux_a_contre_b")
+        if values[i] == 12:
+            sort_values.append("serie_a_contre_b")
+        if values[i] == 13:
+            sort_values.append("record_a_contre_b")
+        if values[i] == 14:
+            sort_values.append("match_joues")
+        if values[i] == 15:
+            sort_values.append("victoire")
+        if values[i] == 16:
+            sort_values.append("nul")
+        if values[i] == 17:
+            sort_values.append("defaite")
+        if values[i] == 18:
+            sort_values.append("team_moyenne_match_goals")
+        if values[i] == 19:
+            sort_values.append("team_moyenne_goals")
+
     return sort_values
 
 

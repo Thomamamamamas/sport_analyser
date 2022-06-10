@@ -97,18 +97,28 @@ class Team_data():
         self.t_vs_a_day_sorted = []
         self.t_vs_a_winner = []
         self.t_vs_a_goal_first = []
+        self.t_vs_a_total_domicile_match = 0
+        self.t_vs_a_total_goal_first = 0
 
         self.t_match_id = []
         self.t_match_day = []
         self.t_match_res = []
         self.t_match_home = []
         self.t_match_goalfirst = []
+        self.t_total_domicile_match = 0
+        self.t_total_goal_first = 0
+        self.t_saison_domicile_match = 0
+        self.t_saison_goal_first = 0
 
         self.a_match_id = []
         self.a_match_home = []
         self.a_match_res = []
         self.a_match_day = []
         self.a_match_goalfirst = []
+        self.a_total_exterieur_match = 0
+        self.a_total_goal_first = 0
+        self.a_saison_exterieur_match = 0
+        self.a_saison_goal_first = 0
 
         self.team_victoire = 0
         self.team_nul = 0
@@ -139,8 +149,8 @@ def get_team_adversaire(app, n, year1):
         app.lta[n].tete_a_tete = get_tete_a_tete(year1, app, n)
         app.lta[n].serie_a_contre_b = get_serie_a_contre_b(year1, app, n)
         app.lta[n].taux_historique_a_contre_b = taux_historique_a_contre_b(app, n)
-        app.lta[n].longest_serie_a_contre_b = get_longest_serie_without_goal_a_contre_b(app, n, year1)
         app.lta[n].actual_serie_a_contre_b = calculate_actual_serie(app.lta[n].serie_a_contre_b)
+        app.lta[n].longest_serie_a_contre_b = get_longest_serie_without_goal_a_contre_b(app, n, year1)
         app.lta[n].adversaire_taux_saison = get_taux_actual_saison_adversaire(app, n, 0) 
     else:
         app.lta[n].adversaire_taux_saison = get_taux_actual_saison_adversaire(app, n, 1)
@@ -159,32 +169,32 @@ def get_team_tk(app, n, year1):
         app.lta[n].ADVERSAIRE_BG = '#66ff99'
     app.lta[n].team_frame = tkinter.Frame(app.scrollable_frame, bg=app.lta[n].BG, highlightbackground="black", highlightthickness=2)
     app.lta[n].ligue_frame = tkinter.Frame(app.lta[n].team_frame, bg= app.lta[n].BG, height= app.height_column, width = app.large_column)
-    app.lta[n].taux_saison_label = tkinter.Label(app.lta[n].team_frame, text= app.lta[n].taux_saison, font='Helvetica 16 bold',  bg= app.lta[n].TEAM_BG, fg='black', height= 3, width = app.small_column)
-    app.lta[n].match_joues_label =  tkinter.Label(app.lta[n].team_frame, text="%d/%d" % (app.lta[n].team_matchs_joues, app.lta[n].team_against_adversaire_matchs_joues), font='Helvetica 16 bold',  bg=app.lta[n].BG, fg='black', height= app.height_column, width = app.small_column)
-    app.lta[n].victoire_label =  tkinter.Label(app.lta[n].team_frame, text="%d/%d" % (app.lta[n].team_victoire, app.lta[n].team_against_adversaire_victoire), font='Helvetica 16 bold',  bg=app.lta[n].BG, fg='black', height= app.height_column, width = app.small_column)
-    app.lta[n].nul_label =  tkinter.Label(app.lta[n].team_frame, text="%d/%d" % (app.lta[n].team_nul, app.lta[n].team_against_adversaire_nul), font='Helvetica 16 bold',  bg=app.lta[n].BG, fg='black', height= app.height_column, width = app.small_column)
-    app.lta[n].defaite_label =  tkinter.Label(app.lta[n].team_frame, text="%d/%d" % (app.lta[n].team_defaite, app.lta[n].team_against_adversaire_defaite), font='Helvetica 16 bold',  bg=app.lta[n].BG, fg='black', height= app.height_column, width = app.small_column)
-    app.lta[n].moyenne_match_goals_label =  tkinter.Label(app.lta[n].team_frame, text="%d/%d" % (app.lta[n].team_moyenne_match_goals, app.lta[n].team_against_adversaire_moyenne_match_goals), font='Helvetica 16 bold',  bg=app.lta[n].BG, fg='black', height= app.height_column, width = app.large_column)
-    app.lta[n].moyenne_goals_label =  tkinter.Label(app.lta[n].team_frame, text="%d/%d" % (app.lta[n].team_moyenne_goals, app.lta[n].team_against_adversaire_moyenne_goals), font='Helvetica 16 bold',  bg=app.lta[n].BG, fg='black', height= app.height_column, width = app.large_column)
+    app.lta[n].taux_saison_label = tkinter.Label(app.lta[n].team_frame, text= "%s\n%s (%s / %s)" % (app.lta[n].taux_saison, year1, app.lta[n].t_saison_goal_first, app.lta[n].t_saison_domicile_match ), font='Helvetica 16 bold',  bg= app.lta[n].TEAM_BG, fg='black', height= 3, width = app.small_column)
+    app.lta[n].adversaire_taux_saison_label = tkinter.Label(app.lta[n].team_frame, text= "%s\n%s (%s / %s)" % (app.lta[n].adversaire_taux_saison, year1, app.lta[n].a_saison_goal_first, app.lta[n].a_saison_exterieur_match ), font='Helvetica 16 bold',  bg= app.lta[n].ADVERSAIRE_BG, fg='black', height= app.height_column, width = app.large_column)
+    app.lta[n].match_joues_label =  tkinter.Label(app.lta[n].team_frame, text="%d / %d" % (app.lta[n].team_matchs_joues, app.lta[n].team_against_adversaire_matchs_joues), font='Helvetica 16 bold',  bg=app.lta[n].BG, fg='black', height= app.height_column, width = app.small_column)
+    app.lta[n].victoire_label =  tkinter.Label(app.lta[n].team_frame, text="%d / %d" % (app.lta[n].team_victoire, app.lta[n].team_against_adversaire_victoire), font='Helvetica 16 bold',  bg=app.lta[n].BG, fg='black', height= app.height_column, width = app.small_column)
+    app.lta[n].nul_label =  tkinter.Label(app.lta[n].team_frame, text="%d / %d" % (app.lta[n].team_nul, app.lta[n].team_against_adversaire_nul), font='Helvetica 16 bold',  bg=app.lta[n].BG, fg='black', height= app.height_column, width = app.small_column)
+    app.lta[n].defaite_label =  tkinter.Label(app.lta[n].team_frame, text="%d / %d" % (app.lta[n].team_defaite, app.lta[n].team_against_adversaire_defaite), font='Helvetica 16 bold',  bg=app.lta[n].BG, fg='black', height= app.height_column, width = app.small_column)
+    app.lta[n].moyenne_match_goals_label =  tkinter.Label(app.lta[n].team_frame, text="%s / %s" % (app.lta[n].team_moyenne_match_goals, app.lta[n].team_against_adversaire_moyenne_match_goals), font='Helvetica 16 bold',  bg=app.lta[n].BG, fg='black', height= app.height_column, width = app.large_column)
+    app.lta[n].moyenne_goals_label =  tkinter.Label(app.lta[n].team_frame, text="%s / %s" % (app.lta[n].team_moyenne_goals, app.lta[n].team_against_adversaire_moyenne_goals), font='Helvetica 16 bold',  bg=app.lta[n].BG, fg='black', height= app.height_column, width = app.large_column)
     if year1 == app.YEAR1:
         app.lta[n].team_name_frame = tkinter.Frame(app.lta[n].team_frame,bg= app.lta[n].TEAM_BG, height= app.height_column, width = app.large_column)
         app.lta[n].ligue_label = tkinter.Label(app.lta[n].ligue_frame, text= app.lta[n].ligue_name, font='Helvetica 16 bold',  bg=app.lta[n].BG, fg='black', height= app.height_column, width=app.medium_column)
         app.lta[n].team_label = tkinter.Label(app.lta[n].team_name_frame, text= app.lta[n].team_name, font='Helvetica 16 bold',  bg=app.lta[n].TEAM_BG, fg='black', height= app.height_column, width=app.medium_column)
         app.lta[n].taux_2x_no_goal_label = tkinter.Label(app.lta[n].team_frame, text= str(app.lta[n].taux_2x_no_goal), font='Helvetica 16 bold',  bg=app.lta[n].TEAM_BG, fg='black', height= app.height_column, width = app.small_column)
         app.lta[n].taux_3x_no_goal_label = tkinter.Label(app.lta[n].team_frame, text= str(app.lta[n].taux_3x_no_goal), font='Helvetica 16 bold',  bg=app.lta[n].TEAM_BG, fg='black', height= app.height_column, width = app.small_column)
-        app.lta[n].adversaire_taux_saison_label = tkinter.Label(app.lta[n].team_frame, text= str(app.lta[n].adversaire_taux_saison), font='Helvetica 16 bold',  bg= app.lta[n].ADVERSAIRE_BG, fg='black', height= app.height_column, width = app.large_column)
-        app.lta[n].taux_historique_label = tkinter.Label(app.lta[n].team_frame, text= str(app.lta[n].taux_historique), font='Helvetica 16 bold',  bg= app.lta[n].TEAM_BG, fg='black', height= app.height_column, width = app.small_column)
+        app.lta[n].taux_historique_label = tkinter.Label(app.lta[n].team_frame, text= "%s\n2017 (%s / %s)" % (app.lta[n].taux_historique, app.lta[n].t_total_goal_first, app.lta[n].t_total_domicile_match), font='Helvetica 16 bold',  bg= app.lta[n].TEAM_BG, fg='black', height= app.height_column, width = app.small_column)
         app.lta[n].serie_label = tkinter.Label(app.lta[n].team_frame, text= str(app.lta[n].serie), font='Helvetica 16 bold',  bg=app.lta[n].BG, fg='black', height= app.height_column, width = app.small_column)
-        app.lta[n].longest_serie_label = tkinter.Label(app.lta[n].team_frame, text="%d/%d" % (app.lta[n].actual_serie, app.lta[n].longest_serie), font='Helvetica 16 bold',  bg=app.lta[n].TEAM_BG, fg='black', height= app.height_column, width = app.small_column)
+        app.lta[n].longest_serie_label = tkinter.Label(app.lta[n].team_frame, text="%d / %d" % (app.lta[n].actual_serie, app.lta[n].longest_serie), font='Helvetica 16 bold',  bg=app.lta[n].TEAM_BG, fg='black', height= app.height_column, width = app.small_column)
         app.lta[n].prochain_match_label = tkinter.Label(app.lta[n].team_frame, text= app.lta[n].prochain_match, font='Helvetica 16 bold',  bg=app.lta[n].BG, fg='black', height= app.height_column, width = app.large_column)
         app.lta[n].adversaire_label = tkinter.Label(app.lta[n].team_frame, text= str(app.lta[n].adversaire), font='Helvetica 16 bold',  bg= app.lta[n].ADVERSAIRE_BG, fg='black', height= app.height_column, width = app.large_column)
-        app.lta[n].adversaire_taux_historique_label =  tkinter.Label(app.lta[n].team_frame, text= str(app.lta[n].adversaire_taux_historique), font='Helvetica 16 bold',  bg= app.lta[n].ADVERSAIRE_BG, fg='black', height= app.height_column, width = app.large_column)
+        app.lta[n].adversaire_taux_historique_label =  tkinter.Label(app.lta[n].team_frame, text= "%s\n2017 (%s / %s)" % (app.lta[n].adversaire_taux_historique, app.lta[n].a_total_goal_first, app.lta[n].a_total_exterieur_match ), font='Helvetica 16 bold',  bg= app.lta[n].ADVERSAIRE_BG, fg='black', height= app.height_column, width = app.large_column)
         app.lta[n].cote_match_label = tkinter.Label(app.lta[n].team_frame, text=app.lta[n].cotes, font='Helvetica 16 bold', fg='black', bg=app.lta[n].BG, borderwidth=2,  height = app.height_column, width = app.small_column)
         app.lta[n].classement_label = tkinter.Label(app.lta[n].team_frame, text=app.lta[n].classement, font='Helvetica 16 bold', fg='black', bg=app.lta[n].BG, borderwidth=2,  height = app.height_column, width = app.small_column)
         app.lta[n].tete_a_tete_label =  tkinter.Label(app.lta[n].team_frame, text= str(app.lta[n].tete_a_tete), font='Helvetica 16 bold',  bg=app.lta[n].BG, fg='black', height= app.height_column, width = app.large_column)
         app.lta[n].serie_a_contre_b_label =  tkinter.Label(app.lta[n].team_frame, text= str(app.lta[n].serie_a_contre_b), font='Helvetica 16 bold',  bg=app.lta[n].TEAM_BG, fg='black', height= app.height_column, width = app.small_column)
-        app.lta[n].taux_historique_a_contre_b_label =  tkinter.Label(app.lta[n].team_frame, text= str(app.lta[n].taux_historique_a_contre_b), font='Helvetica 16 bold',  bg=app.lta[n].TEAM_BG, fg='black', height= app.height_column, width = app.small_column)
-        app.lta[n].longest_serie_a_contre_b_label =  tkinter.Label(app.lta[n].team_frame, text="%d/%d" % (app.lta[n].actual_serie_a_contre_b, app.lta[n].longest_serie_a_contre_b), font='Helvetica 16 bold',  bg=app.lta[n].TEAM_BG, fg='black', height= app.height_column, width = app.small_column)
+        app.lta[n].taux_historique_a_contre_b_label =  tkinter.Label(app.lta[n].team_frame, text = "%s\n2017 (%s / %s)" % (app.lta[n].taux_historique_a_contre_b, app.lta[n].t_vs_a_total_goal_first, app.lta[n].t_vs_a_total_domicile_match), font='Helvetica 16 bold',  bg=app.lta[n].TEAM_BG, fg='black', height= app.height_column, width = app.small_column)
+        app.lta[n].longest_serie_a_contre_b_label =  tkinter.Label(app.lta[n].team_frame, text="%d / %d" % (app.lta[n].actual_serie_a_contre_b, app.lta[n].longest_serie_a_contre_b), font='Helvetica 16 bold',  bg=app.lta[n].TEAM_BG, fg='black', height= app.height_column, width = app.small_column)
         get_image(app.lta[n].ligue_logo_url, app, n, 0)  
         get_image(app.lta[n].team_logo_url, app, n, 1)
     else:
@@ -199,7 +209,6 @@ def get_team_tk(app, n, year1):
         app.lta[n].prochain_match_label = tkinter.Label(app.lta[n].team_frame, text= " ", font='Helvetica 16 bold',  bg=app.lta[n].BG, fg='black', height= app.height_column, width = app.large_column)
         app.lta[n].adversaire_label = tkinter.Label(app.lta[n].team_frame, text= " ", font='Helvetica 16 bold',  bg=app.lta[n].BG, fg='black', height= app.height_column, width = app.large_column)
         app.lta[n].adversaire_taux_historique_label =  tkinter.Label(app.lta[n].team_frame, text= "", font='Helvetica 16 bold',  bg=app.lta[n].BG, fg='black', height= app.height_column, width = app.large_column)
-        app.lta[n].adversaire_taux_saison_label = tkinter.Label(app.lta[n].team_frame, text= " ", font='Helvetica 16 bold',  bg= app.lta[n].ADVERSAIRE_BG, fg='black', height= app.height_column, width = app.large_column)
         app.lta[n].cote_match_label = tkinter.Label(app.lta[n].team_frame, text= " ", font='Helvetica 16 bold', fg='black', bg=app.lta[n].BG, borderwidth=2,  height = app.height_column, width = app.small_column)
         app.lta[n].classement_label = tkinter.Label(app.lta[n].team_frame, text= " ", font='Helvetica 16 bold', fg='black', bg=app.lta[n].BG, borderwidth=2,  height = app.height_column, width = app.small_column)
         app.lta[n].tete_a_tete_label =  tkinter.Label(app.lta[n].team_frame, text= " ", font='Helvetica 16 bold',  bg=app.lta[n].BG, fg='black', height= app.height_column, width = app.large_column)

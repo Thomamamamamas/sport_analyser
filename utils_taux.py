@@ -9,6 +9,8 @@ def get_taux_historique(app, n):
         for j in range(0, len(app.lta[n].t_home_goal_first[i])):
             if app.lta[n].t_home_goal_first[i][j] == 1:
                 total_goal_first = total_goal_first + 1
+    app.lta[n].t_total_domicile_match = total_match
+    app.lta[n].t_total_goal_first = total_goal_first
     if total_match != 0:
         return round((total_goal_first / total_match) * 100, 2)
     else:
@@ -21,6 +23,8 @@ def get_taux_actual_saison(app, n, year):
     for i in range(0, total_match):
         if app.lta[n].t_home_goal_first[year][i] == 1:
             total_goal_first = total_goal_first + 1
+    app.lta[n].t_saison_domicile_match = total_match
+    app.lta[n].t_saison_goal_first = total_goal_first
     if total_match != 0:
         return round((total_goal_first / total_match) * 100, 2)
     else:
@@ -34,6 +38,8 @@ def get_taux_historique_adversaire(app, n):
         for j in range(0, len(app.lta[n].a_ext_goal_first[i])):
             if app.lta[n].a_ext_goal_first[i][j] == 1:
                 total_goal_first = total_goal_first + 1
+    app.lta[n].a_total_exterieur_match = total_match
+    app.lta[n].a_total_goal_first = total_goal_first
     if total_match != 0:
         return round((total_goal_first / total_match) * 100, 2)
     else:
@@ -44,8 +50,10 @@ def get_taux_actual_saison_adversaire(app, n, year):
     total_goal_first = 0
     total_match = len(app.lta[n].a_ext_goal_first[year])
     for i in range(0, total_match):
-        if app.lta[n].a_ext_goal_first[year][i] == 0:
+        if app.lta[n].a_ext_goal_first[year][i] == 1:
             total_goal_first = total_goal_first + 1
+    app.lta[n].a_saison_exterieur_match = total_match
+    app.lta[n].a_saison_goal_first = total_goal_first
     if total_match != 0:
         return round((total_goal_first / total_match) * 100, 2)
     else:
@@ -74,15 +82,16 @@ def get_taux_x_no_goal(app, n, year1, x):
 def taux_historique_a_contre_b(app, n):
     total_goal_first = 0
     total_match = 0
-    
     for i in range(0, 5):
         try:
-            total_match = total_match + len(app.lta[n].t_home_day_sorted[i])
-            for j in range(0, len(app.lta[n].t_home_day_sorted[i])):
-                if app.lta[n].t_home_goal_first[i][j] == 1:
+            total_match = total_match + len(app.lta[n].t_vs_a_home_day_sorted[i])
+            for j in range(0, len(app.lta[n].t_vs_a_home_day_sorted[i])):
+                if app.lta[n].t_vs_a_home_goal_first[i][j] == 1:
                     total_goal_first = total_goal_first + 1
         except:
             continue
+    app.lta[n].t_vs_a_total_domicile_match = total_match
+    app.lta[n].t_vs_a_total_goal_first = total_goal_first
     if total_match != 0:
         return round((total_goal_first / total_match) * 100, 2)
     else:

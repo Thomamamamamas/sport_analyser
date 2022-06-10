@@ -3,8 +3,6 @@ import tkinter
 from datetime import date
 from database_utils import *
 from utils import *
-from crawler_main import crawl_specific_ligue_matchs, crawl_cotes
-from crawler_utils_2 import get_data_json
 from team import  add_team
 from team_fetch import  *
 from widget import *
@@ -26,7 +24,9 @@ class App(tkinter.Tk):
         self.configure(bg='white')
         self.large_column = 22
         self.medium_column = 17
-        self.small_column = 12
+        self.small_column = 16
+        self.large_button_column = 15
+        self.small_button_column = 9
         self.height_column = 1
         self.filtre_options = []
         #crawler_utils
@@ -43,10 +43,13 @@ class App(tkinter.Tk):
         self.row_team_id = 0
         self.df = pd.DataFrame()
         self.id_team_sorted = []
+        self.list_filtres = []
+        self.list_filtres_value = []
         #database_utils
         self.s_db = Db()
         self.db = connect_to_database(self.s_db)
-         
+        #touche
+        self.bind_all("<MouseWheel>", self.on_mousewheel)
         if self.db:
             if start == 0:
                 self.ligue_id = 0
@@ -76,58 +79,69 @@ class App(tkinter.Tk):
         get_all_adversaire_team_id(self)
         get_all_match_team(self)
         get_all_match_adversaire(self)
+        tmp_lta = []
+        for i in range(0, len(self.lta), 2):
+            tmp = 0
+            for j in range(0, 5):
+                tmp = len(self.lta[i].t_match_id[j]) + tmp
+            if tmp != 0:
+                tmp_lta.append(self.lta[i])
+                tmp_lta.append(self.lta[i + 1])
+        self.lta.clear()
+        self.lta = tmp_lta
         for i in range(0, len(self.lta), 2):
             year1 = self.YEAR1
-            if self.lta[i].team_id == 423:
+            #if self.lta[i].team_id == 163:
             #if self.lta[i].ligue_id == 7:
-                for j in range(0, 2):
-                    add_team(self, i + j, year1)
-                    add_team_to_dataframe(self, self.lta[i])
-                    year1 = year1 - 1
-        self.sort_teams([1], [0])
+            for j in range(0, 2):
+                add_team(self, i + j, year1)
+                add_team_to_dataframe(self, self.lta[i])
+                year1 = year1 - 1
+        self.sort_teams([0], [0])
+
+    def on_mousewheel(self, event):
+        shift = (event.state & 0x1) != 0
+        scroll = -1 if event.delta > 0 else 1
+        if shift:
+            self.canvas.xview_scroll(scroll, "units")
+        else:
+            self.canvas.yview_scroll(scroll, "units")
 
     def xview_scroll(self, *args):
         self.canvas.xview(*args)
         self.canvas_column.xview(*args)
 
-    def set_sport_selected(self, selection):
-        self.sport_selected.set(selection)
-        change_selected_value(self, 1)
-
-    def set_pays_selected(self, selection):
-        self.pays_selected.set(selection)
-        change_selected_value(self, 2)
-
-    def set_ligue_selected(self, selection):
-        self.ligue_selected.set(selection)
-        self.ligue_id = database_fetchone(self.cursor, "SELECT ID FROM %s.ligues WHERE LIGUE_NAME = '%s' AND LIGUE_PAYS = '%s'" % (self.sport_selected.get(), self.ligue_selected.get(), self.pays_selected.get()))          
-        change_selected_value(self, 3)
-
-    def set_team_selected(self, selection):
-        self.team_selected.set(selection)
-        self.team_id = database_fetchone(self.cursor, "SELECT ID FROM %s.teams WHERE TEAM_NAME = '%s' AND LIGUE_ID = %d" % (self.sport_selected.get(), self.team_selected.get(), self.ligue_id))
+    def update_filtre_list(self, filtre):
+        for i in range(0, len(self.filtre_options)):
+            if filtre == self.filtre_options[i]:
+                self.list_filtres[i] = filtre.filtre
+                self.list_filtres_value[i] = filtre.value
+                break
+        print(self.list_filtres)
+        print(self.list_filtres_value)
 
     def sort_teams(self, values, ascendings):
-        self.row_team_id = 0
-        self.id_team_sorted.clear()
-        tmp_lta = []
-        
-        sort_dataframe(self, values, ascendings)
-        for i in range(0, len(self.df)):
-            if int(self.df.loc[i, 'id']) not in self.id_team_sorted:
-                self.id_team_sorted.append(int(self.df.loc[i, 'id']))
-                for j in range(0, len(self.lta)):
-                    if self.lta[j].team_id == int(self.df.loc[i, 'id']):
-                        tmp_lta.append(self.lta[j])
-        self.lta.clear()
-        self.lta = tmp_lta
+        if len(self.lta) >= 2:
+            self.row_team_id = 0
+            self.id_team_sorted.clear()
+            tmp_lta = []
+            
+            sort_dataframe(self, values, ascendings)
+            for i in range(0, len(self.df)):
+                if int(self.df.loc[i, 'id']) not in self.id_team_sorted:
+                    self.id_team_sorted.append(int(self.df.loc[i, 'id']))
+                    for j in range(0, len(self.lta)):
+                        if self.lta[j].team_id == int(self.df.loc[i, 'id']):
+                            tmp_lta.append(self.lta[j])
+            self.lta.clear()
+            self.lta = tmp_lta
         for i in range(0, len(self.lta), 2):
             year1 = self.YEAR1
-            if self.lta[i].team_id == 423:
+            #if self.lta[i].team_id == 163:
             #if self.lta[i].ligue_id == 7:
-                for j in range(0, 2):
-                    place_team(self, j + i, year1)
-                    year1 = year1 - 1
+            for j in range(0, 2):
+                place_team(self, j + i, year1)
+                year1 = year1 - 1
 
 if __name__ == '__main__':
     app = App()

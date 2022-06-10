@@ -25,15 +25,19 @@ def wait_till_appear_class(driver, delay, path):
 
 def get_os_chromedriver_path():
     config = ConfigParser()
-    config.read("example.ini")
+    config.read(resource_path("config/example.ini"))
     if platform.system() == 'Darwin':
         return config.get("chromedriver_mac", "path")
     elif platform.system() == 'Windows':
         return config.get("chromedriver_windows", "path")
 
-def chromedriver_path(relative_path):
+def resource_path(relative_path):
     try:
         base_path = sys._MEIPASS
+        while '/' in relative_path:
+            relative_path = relative_path.split('/', 2)[1]
+        while '\\' in relative_path:
+            relative_path = relative_path.split('\\', 2)[1]
     except Exception:
         base_path = os.path.dirname(__file__)
     return os.path.join(base_path, relative_path)

@@ -6,11 +6,11 @@ from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 
 from database_utils import *
-from crawler_utils_1 import get_os_chromedriver_path, chromedriver_path, get_who_goal_first, get_next_match_data, get_match_id, process_data, get_correct_page, show_all_match
+from crawler_utils_1 import get_os_chromedriver_path, resource_path, get_who_goal_first, get_next_match_data, get_match_id, process_data, get_correct_page, show_all_match
 
 def get_data_json(data):
     config_text = ''
-    with open('config/config.json', 'r') as config_json:
+    with open(resource_path('config/config.json'), 'r') as config_json:
         for line in config_json:
             config_text = config_text + line
         config_json.close()
@@ -19,9 +19,10 @@ def get_data_json(data):
 
 
 def crawl_all_ligues(pays, ligues):
+    CHROME_DRIVER_PATH = get_os_chromedriver_path()
     chrome_options = Options()
     chrome_options.add_argument("--headless")
-    driver = webdriver.Chrome(options=chrome_options)
+    driver = webdriver.Chrome(resource_path(CHROME_DRIVER_PATH), options=chrome_options)
     s_db = Db()
     db = connect_to_database(s_db)
     cursor = db.cursor(buffered=True)
@@ -49,9 +50,10 @@ def crawl_all_ligues(pays, ligues):
     driver.quit()
 
 def crawl_all_teams(years_limit, pays, ligues):
+    CHROME_DRIVER_PATH = get_os_chromedriver_path()
     chrome_options = Options()
     chrome_options.add_argument("--headless")
-    driver = webdriver.Chrome(options=chrome_options)
+    driver = webdriver.Chrome(resource_path(CHROME_DRIVER_PATH), options=chrome_options)
     s_db = Db()
     db = connect_to_database(s_db)
     cursor = db.cursor(buffered=True)
@@ -116,8 +118,8 @@ def crawl_all_ligues_matchs(years_limit):
     CHROME_DRIVER_PATH = config.get("chromedriver_mac", "path")
     chrome_options = Options()
     chrome_options.add_argument("--headless")
-    driver = webdriver.Chrome(chromedriver_path(CHROME_DRIVER_PATH), options=chrome_options)
-    subdriver = webdriver.Chrome(chromedriver_path(CHROME_DRIVER_PATH), options=chrome_options)
+    driver = webdriver.Chrome(resource_path(CHROME_DRIVER_PATH), options=chrome_options)
+    subdriver = webdriver.Chrome(resource_path(CHROME_DRIVER_PATH), options=chrome_options)
     s_db = Db()
     db = connect_to_database(s_db)
     cursor = db.cursor(buffered=True)
@@ -204,7 +206,7 @@ def crawl_all_ligue_next_match(db):
         CHROME_DRIVER_PATH = config.get("chromedriver_mac", "path")
         chrome_options = Options()
         chrome_options.add_argument("--headless")
-        caldriver = webdriver.Chrome(chromedriver_path(CHROME_DRIVER_PATH), options=chrome_options)
+        caldriver = webdriver.Chrome(resource_path(CHROME_DRIVER_PATH), options=chrome_options)
         for i in range(0, len(pays)):
             get_next_match_data(caldriver, db, pays[i], ligue_name[i])
 
@@ -218,8 +220,8 @@ def __main__():
     config = ConfigParser()
     config.read("example.ini")
     CHROME_DRIVER_PATH = config.get("chromedriver_mac", "path")
-    driver = webdriver.Chrome(chromedriver_path(CHROME_DRIVER_PATH))
-    subdriver = webdriver.Chrome(chromedriver_path(CHROME_DRIVER_PATH))
+    driver = webdriver.Chrome(resource_path(CHROME_DRIVER_PATH))
+    subdriver = webdriver.Chrome(resource_path(CHROME_DRIVER_PATH))
     crawl_ligue(driver, subdriver, db, s_db, pays, ligues, ligue_id, years_limit)
 
 if __name__ == '__main__':

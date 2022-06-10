@@ -84,7 +84,7 @@ def get_longest_serie_without_goal_a_contre_b(app, n, year1):
     res = 0
     tmp = 0
     for i in range(0, 5):
-        for j in range(0, len(app.lta[n].t_vs_a_home_goal_first[i])):
+        for j in range(0, len(app.lta[n].t_vs_a_home_day_sorted[i])):
             if j == len(app.lta[n].t_vs_a_home_goal_first[i]):
                 break
             if app.lta[n].t_vs_a_home_goal_first[i][j] == 0:
@@ -94,4 +94,6 @@ def get_longest_serie_without_goal_a_contre_b(app, n, year1):
                     res = tmp
                 tmp = 0
         year1 = year1 - 1
+    if tmp > res:
+        res = tmp
     return res
