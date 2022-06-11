@@ -1,4 +1,5 @@
 import os
+import platform
 import sys
 import shutil
 
@@ -6,12 +7,20 @@ data_spec_file = "\tdatas=[('config/*', '.'), ('images/*', '.')],\n"
 import_spec_file = ["shutil.copytree('config', '{0}/config/'.format(DISTPATH))\n", 
                     "shutil.copytree('images', '{0}/images/'.format(DISTPATH))\n"]
 
+str_prefix = ''
+str_exe = ''
+str_cmd = '-F -app --hidden-import=tkinter --hidden-import=tkinter.filedialog main.py'
+if platform.system() == 'Windows':
+    str_prefix = 'python'
+    str_exe = '.exe'
+    str_cmd = 'main.py --onefile '
+
 
 def all():
     fclean()
-    os.system("pyinstaller -F -app --hidden-import=tkinter --hidden-import=tkinter.filedialog main.py --name sport_analyse")
+    os.system("%s pyinstaller%s %s --name sport_analyse" % (str_prefix, str_exe, str_cmd))
     modify_spec_file()
-    os.system("pyinstaller --clean sport_analyse.spec")
+    os.system("%s pyinstaller%s --clean sport_analyse.spec" % (str_prefix, str_exe))
 
 def fclean():
     try:

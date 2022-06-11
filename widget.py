@@ -1,6 +1,4 @@
-from os import uname
 import tkinter
-from tkinter import ttk
 from database_utils import *
 from utils import *
 from widget_utils import Filtre_option, pack_column_utils, pack_filtre_menu, add_new_filtre_button

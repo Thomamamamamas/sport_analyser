@@ -8,13 +8,15 @@ import_spec_file = ["shutil.copytree('config', '{0}/config/'.format(DISTPATH))\n
 
 str_prefix = ''
 str_exe = ''
+str_path = ''
 if platform.system() == 'Windows':
     str_prefix = 'python'
     str_exe = '.exe'
+    str_path = "'driver\chromedriver.exe;driver\\'"
 
 def all():
     fclean()
-    os.system("%s pyinstaller%s main.py --onefile  --add-binary 'driver\chromedriver.exe;driver\' --name crawler_sport_analyse" % (str_prefix, str_exe))
+    os.system("%s pyinstaller%s main.py --onefile  --add-binary %s --name crawler_sport_analyse" % (str_prefix, str_exe, str_path))
     modify_spec_file()
     os.system("%s pyinstaller%s --clean crawler_sport_analyse.spec")
 
@@ -30,8 +32,10 @@ def modify_spec_file():
     tmp = ''
     with open('crawler_sport_analyse.spec', 'r') as spec_file:
         for line in spec_file:
-            if 'datas=[],' not in line:
+            if 'datas=[],' not in line and 'binaries=[' not in line:
                 tmp = tmp + line
+            elif 'binaries=[' in line:
+                tmp = tmp + line.replace("'", "")
             else:
                 tmp = tmp + data_spec_file
         spec_file.close()
