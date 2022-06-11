@@ -51,20 +51,18 @@ class App(tkinter.Tk):
         #touche
         self.bind_all("<MouseWheel>", self.on_mousewheel)
         if self.db:
-            if start == 0:
-                self.ligue_id = 0
-                self.team_id = 0
-                self.cursor = self.db.cursor(buffered=True)
-                set_filtre_menu(self)
-                set_result_frame(self)
-                set_column_utils(self) 
-                self.add_all_teams_to_app()
-                start = 1
+            self.ligue_id = 0
+            self.team_id = 0
+            self.cursor = self.db.cursor(buffered=True)
+            set_filtre_menu(self)
+            set_result_frame(self)
+            set_column_utils(self) 
         else:
             mylabel = tkinter.Label(self, text="Erreur de connection à la base de données", fg="red")
             mylabel.pack()
 
     def add_all_teams_to_app(self):
+        app.unbind('<Map>')
         year1 = self.YEAR1
         get_all_team_id(self)
         get_all_prochain_match(self)
@@ -145,4 +143,6 @@ class App(tkinter.Tk):
 
 if __name__ == '__main__':
     app = App()
+    app.after(100, app.add_all_teams_to_app)
     app.mainloop()
+    

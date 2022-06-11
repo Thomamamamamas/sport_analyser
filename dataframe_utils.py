@@ -20,7 +20,8 @@ def add_team_to_dataframe(app, team):
         "match_joues": team.team_matchs_joues, "victoire": team.team_victoire, "nul": team.team_nul, "defaite": team.team_defaite, 
         "team_moyenne_match_goals": team.team_moyenne_match_goals, "team_moyenne_goals": team.team_moyenne_goals
     }
-    app.df = app.df.append(dict_team, ignore_index=True)
+    df_tmp = pd.DataFrame([dict_team])
+    app.df = pd.concat([app.df, df_tmp], ignore_index=True)
 
 def get_dataframe_sort_values(values):
     sort_values = []

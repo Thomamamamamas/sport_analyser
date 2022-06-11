@@ -1,8 +1,11 @@
 import re
 import time
-
+import platform
+import os
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.chrome.service import Service
+from webdriver_manager.chrome import ChromeDriverManager
 
 from database_utils import *
 from crawler_utils_1 import get_os_chromedriver_path, resource_path, get_who_goal_first, get_match_id, process_data, get_next_match_data, get_classement_correct_page, get_correct_page, match_already_exist, show_all_match, wait_till_appear_class
@@ -16,9 +19,14 @@ def crawl_specific_ligue_matchs(pays, ligue_name, ligue_id):
     CHROME_DRIVER_PATH = get_os_chromedriver_path()
     chrome_options = Options()
     chrome_options.add_argument("--headless")
-    driver = webdriver.Chrome(resource_path(CHROME_DRIVER_PATH), options=chrome_options)
-    subdriver = webdriver.Chrome(resource_path(CHROME_DRIVER_PATH), options=chrome_options)
-    caldriver = webdriver.Chrome(resource_path(CHROME_DRIVER_PATH), options=chrome_options)
+    if platform.system() == 'Darwin':
+        driver = webdriver.Chrome(resource_path(CHROME_DRIVER_PATH), options=chrome_options)
+        subdriver = webdriver.Chrome(resource_path(CHROME_DRIVER_PATH), options=chrome_options)
+        caldriver = webdriver.Chrome(resource_path(CHROME_DRIVER_PATH), options=chrome_options)
+    elif platform.system() == 'Windows':
+        driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
+        subdriver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
+        caldriver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
     s_db = Db()
     db = connect_to_database(s_db)
     year1 = 2021
@@ -44,7 +52,10 @@ def crawl_classement(db, pays, ligue_name, ligue_id, year1, year2):
     CHROME_DRIVER_PATH = get_os_chromedriver_path()
     chrome_options = Options()
     chrome_options.add_argument("--headless")
-    driver = webdriver.Chrome(resource_path(CHROME_DRIVER_PATH), options=chrome_options)
+    if platform.system() == 'Darwin':
+        driver = webdriver.Chrome(resource_path(CHROME_DRIVER_PATH), options=chrome_options)
+    elif platform.system() == 'Windows':
+        driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
     if db:
         cursor = db.cursor()
         get_classement_correct_page(driver, pays, ligue_name, year1, year2, 0)
@@ -152,7 +163,10 @@ def crawl_cotes():
     CHROME_DRIVER_PATH = get_os_chromedriver_path()
     chrome_options = Options()
     chrome_options.add_argument("--headless")
-    driver = webdriver.Chrome(resource_path(CHROME_DRIVER_PATH), options=chrome_options)
+    if platform.system() == 'Darwin':
+        driver = webdriver.Chrome(resource_path(CHROME_DRIVER_PATH), options=chrome_options)
+    elif platform.system() == 'Windows':
+        driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
     s_db = Db()
     db = connect_to_database(s_db)
     if db:

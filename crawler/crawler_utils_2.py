@@ -4,6 +4,8 @@ import json
 from configparser import ConfigParser
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.chrome.service import Service
+from webdriver_manager.chrome import ChromeDriverManager
 
 from database_utils import *
 from crawler_utils_1 import get_os_chromedriver_path, resource_path, get_who_goal_first, get_next_match_data, get_match_id, process_data, get_correct_page, show_all_match
@@ -22,7 +24,10 @@ def crawl_all_ligues(pays, ligues):
     CHROME_DRIVER_PATH = get_os_chromedriver_path()
     chrome_options = Options()
     chrome_options.add_argument("--headless")
-    driver = webdriver.Chrome(resource_path(CHROME_DRIVER_PATH), options=chrome_options)
+    if platform.system() == 'Darwin':
+        driver = webdriver.Chrome(resource_path(CHROME_DRIVER_PATH), options=chrome_options)
+    elif platform.system() == 'Windows':
+        driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
     s_db = Db()
     db = connect_to_database(s_db)
     cursor = db.cursor(buffered=True)
@@ -53,7 +58,10 @@ def crawl_all_teams(years_limit, pays, ligues):
     CHROME_DRIVER_PATH = get_os_chromedriver_path()
     chrome_options = Options()
     chrome_options.add_argument("--headless")
-    driver = webdriver.Chrome(resource_path(CHROME_DRIVER_PATH), options=chrome_options)
+    if platform.system() == 'Darwin':
+        driver = webdriver.Chrome(resource_path(CHROME_DRIVER_PATH), options=chrome_options)
+    elif platform.system() == 'Windows':
+        driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
     s_db = Db()
     db = connect_to_database(s_db)
     cursor = db.cursor(buffered=True)
@@ -118,8 +126,12 @@ def crawl_all_ligues_matchs(years_limit):
     CHROME_DRIVER_PATH = config.get("chromedriver_mac", "path")
     chrome_options = Options()
     chrome_options.add_argument("--headless")
-    driver = webdriver.Chrome(resource_path(CHROME_DRIVER_PATH), options=chrome_options)
-    subdriver = webdriver.Chrome(resource_path(CHROME_DRIVER_PATH), options=chrome_options)
+    if platform.system() == 'Darwin':
+        driver = webdriver.Chrome(resource_path(CHROME_DRIVER_PATH), options=chrome_options)
+        subdriver = webdriver.Chrome(resource_path(CHROME_DRIVER_PATH), options=chrome_options)
+    elif platform.system() == 'Windows':
+        driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
+        subdriver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
     s_db = Db()
     db = connect_to_database(s_db)
     cursor = db.cursor(buffered=True)
@@ -206,7 +218,10 @@ def crawl_all_ligue_next_match(db):
         CHROME_DRIVER_PATH = config.get("chromedriver_mac", "path")
         chrome_options = Options()
         chrome_options.add_argument("--headless")
-        caldriver = webdriver.Chrome(resource_path(CHROME_DRIVER_PATH), options=chrome_options)
+        if platform.system() == 'Darwin':
+            caldriver = webdriver.Chrome(resource_path(CHROME_DRIVER_PATH), options=chrome_options)
+        elif platform.system() == 'Windows':
+            caldriver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
         for i in range(0, len(pays)):
             get_next_match_data(caldriver, db, pays[i], ligue_name[i])
 
@@ -220,8 +235,14 @@ def __main__():
     config = ConfigParser()
     config.read("example.ini")
     CHROME_DRIVER_PATH = config.get("chromedriver_mac", "path")
-    driver = webdriver.Chrome(resource_path(CHROME_DRIVER_PATH))
-    subdriver = webdriver.Chrome(resource_path(CHROME_DRIVER_PATH))
+    chrome_options = Options()
+    chrome_options.add_argument("--headless")
+    if platform.system() == 'Darwin':
+        driver = webdriver.Chrome(resource_path(CHROME_DRIVER_PATH), options=chrome_options)
+        subdriver = webdriver.Chrome(resource_path(CHROME_DRIVER_PATH), options=chrome_options)
+    elif platform.system() == 'Windows':
+        driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
+        subdriver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
     crawl_ligue(driver, subdriver, db, s_db, pays, ligues, ligue_id, years_limit)
 
 if __name__ == '__main__':

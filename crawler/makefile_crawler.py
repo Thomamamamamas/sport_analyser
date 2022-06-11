@@ -4,21 +4,23 @@ import sys
 import shutil
 
 data_spec_file = "\tdatas=[('config/*', '.')],\n"
-import_spec_file = ["shutil.copytree('config', '{0}/config/'.format(DISTPATH))\n"]
+import_spec_file = ["shutil.copytree('config', '{0}/config/'.format(DISTPATH))\n",
+                    "shutil.copytree('driver', '{0}/driver/'.format(DISTPATH))\n"]
 
-str_prefix = ''
-str_exe = ''
-str_path = ''
+if platform.system() == 'Darwin':
+    str_prefix = ''
+    str_exe = ''
+    str_binaries = ""
 if platform.system() == 'Windows':
     str_prefix = 'python'
     str_exe = '.exe'
-    str_path = "'driver\chromedriver.exe;driver\\'"
+    str_binaries = "--add-binary 'driver\chromedriver.exe;driver\\'"
 
 def all():
     fclean()
-    os.system("%s pyinstaller%s main.py --onefile  --add-binary %s --name crawler_sport_analyse" % (str_prefix, str_exe, str_path))
+    os.system("%s pyinstaller%s crawler_main.py --onefile  %s --name crawler_sport_analyse" % (str_prefix, str_exe, str_binaries))
     modify_spec_file()
-    os.system("%s pyinstaller%s --clean crawler_sport_analyse.spec")
+    os.system("%s pyinstaller%s --clean crawler_sport_analyse.spec" % (str_prefix, str_exe))
 
 def fclean():
     try:
