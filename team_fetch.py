@@ -79,6 +79,18 @@ def get_all_adversaire_team_id(app):
         for j in range(0, 2):
             app.lta[i + j].adversaire_team_id = db_data
 
+def get_all_adversaire_classement(app):
+    for i in range(0, len(app.lta), 2):
+        db_data = database_fetchone(app.cursor, "SELECT CLASSEMENT FROM football.teams WHERE ID = %d" %(app.lta[i].adversaire_team_id))
+        for j in range(0, 2):
+            if app.lta[i].team_id == 163:
+                print(app.lta[i].adversaire_team_id)
+                print(db_data)
+            if db_data != None and db_data != '':
+                app.lta[i + j].a_classement = db_data
+            else:
+                app.lta[i + j].a_classement = 0
+
 def get_all_match_team(app):
     for i in range(0, len(app.lta), 1):
         year1 = app.YEAR1

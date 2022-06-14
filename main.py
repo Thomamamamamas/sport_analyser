@@ -22,9 +22,16 @@ class App(tkinter.Tk):
         self.screen_height = self.winfo_screenheight()
         self.geometry('%sx%s' % (self.screen_width, self.screen_height))
         self.configure(bg='white')
-        self.large_column = 22
-        self.medium_column = 17
-        self.small_column = 16
+        if platform.system() == 'Darwin':
+            self.large_column = 22
+            self.medium_column = 17
+            self.medium_empty_column = 17
+            self.small_column = 12
+        elif platform.system() == 'Windows':
+            self.large_column = 22
+            self.medium_column = 17
+            self.medium_empty_column = 16
+            self.small_column = 12
         self.large_button_column = 15
         self.small_button_column = 9
         self.height_column = 1
@@ -75,6 +82,7 @@ class App(tkinter.Tk):
         get_all_team_logo_url(self)
         get_all_adversaire(self)
         get_all_adversaire_team_id(self)
+        get_all_adversaire_classement(self)
         get_all_match_team(self)
         get_all_match_adversaire(self)
         tmp_lta = []
@@ -102,6 +110,7 @@ class App(tkinter.Tk):
         scroll = -1 if event.delta > 0 else 1
         if shift:
             self.canvas.xview_scroll(scroll, "units")
+            self.canvas_column.xview_scroll(scroll, "units")
         else:
             self.canvas.yview_scroll(scroll, "units")
 
