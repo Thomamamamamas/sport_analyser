@@ -123,8 +123,8 @@ def add_new_filtre_button(app):
 
 
 def pack_filtre_menu(app):
-    app.filtre_add_button.grid(row = 0, column = 0)
-    r_id = 1
+    #app.filtre_add_button.grid(row = 0, column = 0)
+    r_id = 0
     c_id = 0
     for i in range(0, len(app.filtre_options)):
         app.filtre_options[i].filtre_drop.grid(row = r_id, column = c_id)
@@ -138,7 +138,6 @@ def pack_filtre_menu(app):
 def unpack_filtre_menu(app):
     print("filtre options = " + str(app.filtre_options))
     for i in range(0, len(app.filtre_options), 1):
-        print("filtre option i = " + str(app.filtre_options[i]))
         app.filtre_options[i].filtre_drop.grid_forget()
         app.filtre_options[i].value_drop.grid_forget()
         app.filtre_options[i].delete_button.grid_forget()
@@ -156,7 +155,6 @@ def delete_filtre(app, self):
             break
 
 def set_filtre_mode(selection, app, filtre):
-    unpack_filtre_menu(app)
     filtre.filtre_selected.set(selection)
     filtre.filtre_drop = tkinter.OptionMenu(app.filtre_menu_frame, filtre.filtre_selected, *filtre.filtre_dict["text_mode"], command= lambda x:set_filtre_mode(x, app, filtre))
     filtre.get_filtre()
@@ -167,11 +165,11 @@ def set_filtre_mode(selection, app, filtre):
     for i in range(0, len(app.filtre_options)):
         if filtre == app.filtre_options[i]:
             app.filtre_options[i] = filtre
-    pack_filtre_menu(app)
     app.sort_teams(app.list_filtres, app.list_filtres_value)
+    unpack_filtre_menu(app)
+    pack_filtre_menu(app)
 
 def set_filtre_value(selection, app, filtre):
-    unpack_filtre_menu(app)
     filtre.value_selected.set(selection)
     filtre.get_value()
     app.update_filtre_list(filtre)
@@ -179,5 +177,6 @@ def set_filtre_value(selection, app, filtre):
     for i in range(0, len(app.filtre_options)):
         if filtre == app.filtre_options[i]:
             app.filtre_options[i] = filtre
-    pack_filtre_menu(app)
     app.sort_teams(app.list_filtres, app.list_filtres_value)
+    unpack_filtre_menu(app)
+    pack_filtre_menu(app)

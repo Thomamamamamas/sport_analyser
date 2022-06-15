@@ -6,7 +6,7 @@ from utils import *
 from team import  add_team
 from team_fetch import  *
 from widget import *
-from widget_team import place_team
+from widget_team import delete_all_teams_widget, place_team
 from dataframe_utils import *
 
 class App(tkinter.Tk):
@@ -25,12 +25,12 @@ class App(tkinter.Tk):
         if platform.system() == 'Darwin':
             self.large_column = 22
             self.medium_column = 17
-            self.medium_empty_column = 17
+            self.medium_empty_column = 12
             self.small_column = 12
         elif platform.system() == 'Windows':
             self.large_column = 22
             self.medium_column = 17
-            self.medium_empty_column = 16
+            self.medium_empty_column = 13
             self.small_column = 12
         self.large_button_column = 15
         self.small_button_column = 9
@@ -124,10 +124,9 @@ class App(tkinter.Tk):
                 self.list_filtres[i] = filtre.filtre
                 self.list_filtres_value[i] = filtre.value
                 break
-        print(self.list_filtres)
-        print(self.list_filtres_value)
 
     def sort_teams(self, values, ascendings):
+        delete_all_teams_widget
         if len(self.lta) >= 2:
             self.row_team_id = 0
             self.id_team_sorted.clear()
