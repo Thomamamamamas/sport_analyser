@@ -29,9 +29,7 @@ def check_if_image_already_create(app, file_name, i):
             img = app.team_logo[tmp]
     return img
         
-
 def get_image(image_url, app, n, i):
-    tmp = 0
     if 'https://www.' not in image_url:
         image_url = 'https://www.' + image_url
     file_name = 'images/' + image_url.replace('/', '_').replace('.', '_').replace(':', '_') + '.png'
@@ -105,6 +103,8 @@ def delete_all_teams_widget(app):
 def delete_team_widget(app, n):
     try:
         app.lta[n].team_frame.grid_forget()
+        app.lta[n].logo_cv[0].grid_forget()
+        app.lta[n].logo_cv[1].grid_forget()
         app.lta[n].ligue_frame.grid_forget()
         app.lta[n].team_name_frame.grid_forget()
         app.lta[n].taux_historique_label.grid_forget()
@@ -129,5 +129,34 @@ def delete_team_widget(app, n):
         app.lta[n].defaite_label.grid_forget()
         app.lta[n].moyenne_match_goals_label.grid_forget()
         app.lta[n].moyenne_goals_label.grid_forget()
+
+        app.lta[n].team_frame = None
+        app.lta[n].ligue_frame = None
+        app.lta[n].team_name_frame = None
+        app.lta[n].taux_historique_label = None
+        app.lta[n].taux_saison_label = None
+        app.lta[n].serie_label = None
+        app.lta[n].longest_serie_label = None
+        app.lta[n].taux_2x_no_goal_label = None
+        app.lta[n].taux_3x_no_goal_label = None
+        app.lta[n].prochain_match_label = None
+        app.lta[n].adversaire_label = None
+        app.lta[n].adversaire_taux_historique_label = None
+        app.lta[n].adversaire_taux_saison_label = None
+        app.lta[n].cote_match_label = None
+        app.lta[n].classement_label = None
+        app.lta[n].tete_a_tete_label = None
+        app.lta[n].serie_a_contre_b_label = None
+        app.lta[n].taux_historique_a_contre_b_label = None
+        app.lta[n].longest_serie_a_contre_b_label = None
+        app.lta[n].match_joues_label = None
+        app.lta[n].victoire_label = None
+        app.lta[n].nul_label = None
+        app.lta[n].defaite_label = None
+        app.lta[n].moyenne_match_goals_label = None
+        app.lta[n].moyenne_goals_label = None
+        app.lta[n].logo_cv.clear()
     except:
         return
+
+        

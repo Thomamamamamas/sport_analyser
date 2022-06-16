@@ -3,7 +3,7 @@ import tkinter
 from datetime import date
 from database_utils import *
 from utils import *
-from team import  add_team
+from team import  add_team, get_team_tk
 from team_fetch import  *
 from widget import *
 from widget_team import delete_all_teams_widget, place_team
@@ -29,7 +29,7 @@ class App(tkinter.Tk):
             self.small_column = 12
         elif platform.system() == 'Windows':
             self.large_column = 22
-            self.medium_column = 17
+            self.medium_column = 19
             self.medium_empty_column = 13
             self.small_column = 12
         self.large_button_column = 15
@@ -103,7 +103,7 @@ class App(tkinter.Tk):
                 add_team(self, i + j, year1)
                 add_team_to_dataframe(self, self.lta[i])
                 year1 = year1 - 1
-        self.sort_teams([0], [0])
+        self.sort_teams([0], [0], 0)
 
     def on_mousewheel(self, event):
         shift = (event.state & 0x1) != 0
@@ -125,8 +125,7 @@ class App(tkinter.Tk):
                 self.list_filtres_value[i] = filtre.value
                 break
 
-    def sort_teams(self, values, ascendings):
-        delete_all_teams_widget
+    def sort_teams(self, values, ascendings, is_sort):
         if len(self.lta) >= 2:
             self.row_team_id = 0
             self.id_team_sorted.clear()
@@ -142,12 +141,17 @@ class App(tkinter.Tk):
             self.lta.clear()
             self.lta = tmp_lta
         for i in range(0, len(self.lta), 2):
-            year1 = self.YEAR1
-            #if self.lta[i].team_id == 163:
-            #if self.lta[i].ligue_id == 7:
-            for j in range(0, 2):
-                place_team(self, j + i, year1)
-                year1 = year1 - 1
+            try:
+                year1 = self.YEAR1
+                #if self.lta[i].team_id == 163:
+                #if self.lta[i].ligue_id == 7:
+                for j in range(0, 2):
+                    if is_sort == 1 and platform.system() == 'Windows':
+                        get_team_tk(self, i + j, year1)
+                    place_team(self, j + i, year1)
+                    year1 = year1 - 1
+            except:
+                break
 
 if __name__ == '__main__':
     app = App()

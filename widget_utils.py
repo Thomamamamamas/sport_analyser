@@ -5,6 +5,7 @@ import io
 import base64
 from database_utils import *
 from utils import resource_path
+from widget_team import delete_all_teams_widget
 
 class Filtre_option():
     def __init__(self, app):
@@ -112,19 +113,21 @@ def pack_column_utils(app):
     app.moyenne_match_label.grid(row = 0, column = 22,  sticky='nsew')
     app.moyenne_but_marque_label.grid(row = 0, column = 23,  sticky='nsew')
 
-
 def add_new_filtre_button(app):
+    if platform.system() == 'Windows':
+        delete_all_teams_widget(app)
     filtre = Filtre_option(app)
     app.list_filtres.append(filtre.filtre)
     app.list_filtres_value.append(filtre.value)
     app.filtre_options.append(filtre)
+    unpack_filtre_menu(app)
     pack_filtre_menu(app)
-    app.sort_teams(app.list_filtres, app.list_filtres_value)
-
+    app.sort_teams(app.list_filtres, app.list_filtres_value, 1)
 
 def pack_filtre_menu(app):
-    #app.filtre_add_button.grid(row = 0, column = 0)
-    r_id = 0
+    app.filtre_menu_frame.grid(row=0, column = 0, sticky='nsew')
+    app.filtre_add_button.grid(row = 0, column = 0)
+    r_id = 1
     c_id = 0
     for i in range(0, len(app.filtre_options)):
         app.filtre_options[i].filtre_drop.grid(row = r_id, column = c_id)
@@ -136,47 +139,66 @@ def pack_filtre_menu(app):
             c_id = 0
 
 def unpack_filtre_menu(app):
-    print("filtre options = " + str(app.filtre_options))
+    app.filtre_menu_frame.grid_forget()
     for i in range(0, len(app.filtre_options), 1):
         app.filtre_options[i].filtre_drop.grid_forget()
         app.filtre_options[i].value_drop.grid_forget()
         app.filtre_options[i].delete_button.grid_forget()
         
-def delete_filtre(app, self):
+def delete_filtre(app, filtre):
+    if platform.system() == 'Windows':
+        delete_all_teams_widget(app)
     for i in range(0, len(app.filtre_options)):
-        if self == app.filtre_options[i]:
+        if filtre == app.filtre_options[i]:
             app.list_filtres.pop(i)
             app.list_filtres_value.pop(i)
-            app.filtre_options.remove(self)
-            self.filtre_drop.grid_forget()
-            self.value_drop.grid_forget()
-            self.delete_button.grid_forget()  
-            app.sort_teams(app.list_filtres, app.list_filtres_value)
+            app.filtre_options.remove(filtre)
+            filtre.filtre_drop.grid_forget()
+            filtre.value_drop.grid_forget()
+            filtre.delete_button.grid_forget()
+            filtre.filtre_drop = None
+            filtre.value_drop = None
+            filtre.delete_button = None
+            del filtre
+            app.sort_teams(app.list_filtres, app.list_filtres_value, 1)
             break
 
 def set_filtre_mode(selection, app, filtre):
+    if platform.system() == 'Windows':
+        delete_all_teams_widget(app)
     filtre.filtre_selected.set(selection)
+    filtre.filtre_drop.grid_forget()
+    filtre.filtre_drop = None
     filtre.filtre_drop = tkinter.OptionMenu(app.filtre_menu_frame, filtre.filtre_selected, *filtre.filtre_dict["text_mode"], command= lambda x:set_filtre_mode(x, app, filtre))
     filtre.get_filtre()
     filtre.value_selected.set(filtre.filtre_dict["text_values"][filtre.filtre][0])
     filtre.value = 0
     app.update_filtre_list(filtre)
+    filtre.value_drop.grid_forget()
+    filtre.value_drop =  None
     filtre.value_drop = tkinter.OptionMenu(app.filtre_menu_frame, filtre.value_selected, *filtre.filtre_dict["text_values"][filtre.filtre], command= lambda x :set_filtre_value(x, app, filtre))
     for i in range(0, len(app.filtre_options)):
+        print(app.filtre_options[i].filtre_selected.get())
         if filtre == app.filtre_options[i]:
             app.filtre_options[i] = filtre
-    app.sort_teams(app.list_filtres, app.list_filtres_value)
+            break
     unpack_filtre_menu(app)
     pack_filtre_menu(app)
+    app.sort_teams(app.list_filtres, app.list_filtres_value, 1)
 
 def set_filtre_value(selection, app, filtre):
+    if platform.system() == 'Windows':
+        delete_all_teams_widget(app)
     filtre.value_selected.set(selection)
     filtre.get_value()
     app.update_filtre_list(filtre)
+    filtre.value_drop.grid_forget()
+    filtre.value_drop =  None
     filtre.value_drop = tkinter.OptionMenu(app.filtre_menu_frame, filtre.value_selected, *filtre.filtre_dict["text_values"][filtre.value], command= lambda x :set_filtre_value(x, app, filtre))
     for i in range(0, len(app.filtre_options)):
         if filtre == app.filtre_options[i]:
             app.filtre_options[i] = filtre
-    app.sort_teams(app.list_filtres, app.list_filtres_value)
+            break
     unpack_filtre_menu(app)
     pack_filtre_menu(app)
+    app.sort_teams(app.list_filtres, app.list_filtres_value, 1)

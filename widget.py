@@ -68,9 +68,8 @@ def set_filtre_menu(app):
     app.filtre_menu_frame = tkinter.Frame(app, bg='white', height = 200, width = 200)
     app.filtre_menu_frame.grid(row= 0, column= 0,  sticky='nsew')
     app.filtre_add_button = tkinter.Button(app.filtre_menu_frame, text="Ajouter filtre", bg='white', command = lambda: add_new_filtre_button(app))
-    for i in range(0, 3):
-        filtre = Filtre_option(app)
-        app.list_filtres.append(filtre.filtre)
-        app.list_filtres_value.append(filtre.value)
-        app.filtre_options.append(filtre)
+    filtre = Filtre_option(app)
+    app.list_filtres.append(filtre.filtre)
+    app.list_filtres_value.append(filtre.value)
+    app.filtre_options.append(filtre)
     pack_filtre_menu(app)
