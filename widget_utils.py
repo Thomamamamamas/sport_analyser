@@ -1,3 +1,4 @@
+from re import I
 import tkinter
 from PIL import Image
 from urllib.request import urlopen
@@ -63,7 +64,7 @@ def save_image(image_url, type):
     if 'https://www.' not in image_url:
             image_url = 'https://www.' + image_url
     file_name = 'images/' + image_url.replace('/', '_').replace('.', '_').replace(':', '_') + '.png'
-    image_byt = urlopen(resource_path(image_url)).read()
+    image_byt = urlopen(image_url).read()
     img_b64 = base64.encodebytes(image_byt)
     imgdata = base64.b64decode(img_b64)
     img = Image.open(io.BytesIO(imgdata))
@@ -120,6 +121,7 @@ def add_new_filtre_button(app):
     app.list_filtres.append(filtre.filtre)
     app.list_filtres_value.append(filtre.value)
     app.filtre_options.append(filtre)
+    add_saved_filtres(filtre)
     unpack_filtre_menu(app)
     pack_filtre_menu(app)
     app.sort_teams(app.list_filtres, app.list_filtres_value, 1)
@@ -150,6 +152,7 @@ def delete_filtre(app, filtre):
         delete_all_teams_widget(app)
     for i in range(0, len(app.filtre_options)):
         if filtre == app.filtre_options[i]:
+            delete_saved_filtres(app, i)
             app.list_filtres.pop(i)
             app.list_filtres_value.pop(i)
             app.filtre_options.remove(filtre)
@@ -164,6 +167,7 @@ def delete_filtre(app, filtre):
             break
 
 def set_filtre_mode(selection, app, filtre):
+    n = 0
     if platform.system() == 'Windows':
         delete_all_teams_widget(app)
     filtre.filtre_selected.set(selection)
@@ -178,15 +182,17 @@ def set_filtre_mode(selection, app, filtre):
     filtre.value_drop =  None
     filtre.value_drop = tkinter.OptionMenu(app.filtre_menu_frame, filtre.value_selected, *filtre.filtre_dict["text_values"][filtre.filtre], command= lambda x :set_filtre_value(x, app, filtre))
     for i in range(0, len(app.filtre_options)):
-        print(app.filtre_options[i].filtre_selected.get())
         if filtre == app.filtre_options[i]:
             app.filtre_options[i] = filtre
+            n = i
             break
+    change_saved_filtres(app, filtre, n)
     unpack_filtre_menu(app)
     pack_filtre_menu(app)
     app.sort_teams(app.list_filtres, app.list_filtres_value, 1)
 
 def set_filtre_value(selection, app, filtre):
+    n = 0
     if platform.system() == 'Windows':
         delete_all_teams_widget(app)
     filtre.value_selected.set(selection)
@@ -198,7 +204,100 @@ def set_filtre_value(selection, app, filtre):
     for i in range(0, len(app.filtre_options)):
         if filtre == app.filtre_options[i]:
             app.filtre_options[i] = filtre
+            n = i
             break
+    change_saved_filtres(app, filtre, n)
     unpack_filtre_menu(app)
     pack_filtre_menu(app)
     app.sort_teams(app.list_filtres, app.list_filtres_value, 1)
+
+def add_saved_filtres(filtre):
+    tmp = ''
+    with open(resource_path('config/filtre.json'), 'r') as filtre_json:
+        for line in filtre_json:
+            if '"filtres":' in line or '"values":' in line:
+                tmp = tmp + line.split(']', 2)[0]
+                if any(i.isdigit() for i in line):
+                    tmp = tmp + ', '
+                if '"filtres":' in line:
+                    tmp = tmp + str(filtre.filtre)
+                else:
+                    tmp = tmp + str(filtre.value)
+                tmp = tmp + ']'
+                if '"filtres":' in line:
+                    tmp = tmp + ','
+                tmp = tmp + '\n'
+            else:
+                tmp = tmp + line
+    with open(resource_path('config/filtre.json'), 'w') as filtre_json:
+        filtre_json.write(tmp)
+        filtre_json.close()
+
+def delete_saved_filtres(app, n):
+    tmp = ''
+    with open(resource_path('config/filtre.json'), "r") as filtre_json:
+        for line in filtre_json:
+            if '"filtres":' in line or '"values":' in line:
+                line = line.split(']', 1)[0]
+                for i in range(0, len(app.list_filtres)):
+                    if i != n:
+                        tmp = tmp + line.split(',', len(app.list_filtres) - 1)[i].replace('\n', '')
+                        if i != len(app.list_filtres) - 1 and n != len(app.list_filtres) - 1:
+                            tmp = tmp + ','
+                    elif i == n:
+                        if '"filtres":' in line:
+                            if n == 0:
+                                tmp = tmp + '"filtres": ['
+                        else:
+                            if n == 0:
+                                tmp = tmp + '"values": ['
+                if '"filtres":' in line and tmp[-1:] != ',' :
+                    tmp = tmp + '],'
+                elif '"values":' in line and tmp[-1:] != ']' :
+                    tmp = tmp + ']'
+                tmp = tmp + '\n'
+            else:
+                tmp = tmp + line
+        filtre_json.close()
+    with open(resource_path('config/filtre.json'), 'w') as filtre_json:
+        filtre_json.write(tmp)
+        filtre_json.close()
+
+
+def change_saved_filtres(app, filtre, n):
+    tmp = ''
+    with open(resource_path('config/filtre.json'), "r") as filtre_json:
+        for line in filtre_json:
+            if '"filtres":' in line or '"values":' in line:
+                line = line.split(']', 1)[0]
+                for i in range(0, len(app.list_filtres)):
+                    if i != n:
+                        tmp = tmp + line.split(',', len(app.list_filtres) - 1)[i].replace('\n', '')
+                    elif i == n:
+                        if '"filtres":' in line:
+                            if n == 0:
+                                tmp = tmp + '"filtres": ['
+                            tmp = tmp + str(filtre.filtre)
+                        else:
+                            if n == 0:
+                                tmp = tmp + '"values": ['
+                            tmp = tmp + str(filtre.value)
+                    if i != len(app.list_filtres) - 1:
+                            tmp = tmp + ','
+                if '"filtres":' in line and tmp[-1:] != ',' :
+                    tmp = tmp + '],'
+                elif '"values":' in line and tmp[-1:] != ']' :
+                    tmp = tmp + ']'
+                tmp = tmp + '\n'
+            else:
+                tmp = tmp + line
+        filtre_json.close()
+    with open(resource_path('config/filtre.json'), 'w') as filtre_json:
+        filtre_json.write(tmp)
+        filtre_json.close()
+
+if __name__ == '__main__':
+    s_db = Db()
+    db = connect_to_database(s_db)
+    sport = 'football'
+    save_all_images(db, sport)

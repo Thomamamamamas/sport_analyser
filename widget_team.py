@@ -55,7 +55,7 @@ def place_teams(app):
             year1 = year1 - 1
 
 def place_team(app, n, year1):
-    if app.lta[n].prochain_match != None and app.lta[n].prochain_match != '':
+    if app.lta[n].prochain_match != None and app.lta[n].prochain_match != '' and len(app.lta[n].t_match_id[0]) != 0 and app.number_of_widget < app.limit_of_widget:
         print("place l'équipe : %d" % (app.lta[n].team_id))
         app.lta[n].team_frame.grid(row = app.row_team_id, column = 0, sticky = 'nsew')
         if year1 == app.YEAR1:
@@ -102,33 +102,33 @@ def delete_all_teams_widget(app):
 
 def delete_team_widget(app, n):
     try:
-        app.lta[n].team_frame.grid_forget()
-        app.lta[n].logo_cv[0].grid_forget()
-        app.lta[n].logo_cv[1].grid_forget()
-        app.lta[n].ligue_frame.grid_forget()
-        app.lta[n].team_name_frame.grid_forget()
-        app.lta[n].taux_historique_label.grid_forget()
-        app.lta[n].taux_saison_label.grid_forget()
-        app.lta[n].serie_label.grid_forget()
-        app.lta[n].longest_serie_label.grid_forget()
-        app.lta[n].taux_2x_no_goal_label.grid_forget()
-        app.lta[n].taux_3x_no_goal_label.grid_forget()
-        app.lta[n].prochain_match_label.grid_forget()
-        app.lta[n].adversaire_label.grid_forget()
-        app.lta[n].adversaire_taux_historique_label.grid_forget()
-        app.lta[n].adversaire_taux_saison_label.grid_forget()
-        app.lta[n].cote_match_label.grid_forget()
-        app.lta[n].classement_label.grid_forget()
-        app.lta[n].tete_a_tete_label.grid_forget()
-        app.lta[n].serie_a_contre_b_label.grid_forget()
-        app.lta[n].taux_historique_a_contre_b_label.grid_forget()
-        app.lta[n].longest_serie_a_contre_b_label.grid_forget()
-        app.lta[n].match_joues_label.grid_forget()
-        app.lta[n].victoire_label.grid_forget()
-        app.lta[n].nul_label.grid_forget()
-        app.lta[n].defaite_label.grid_forget()
-        app.lta[n].moyenne_match_goals_label.grid_forget()
-        app.lta[n].moyenne_goals_label.grid_forget()
+        app.lta[n].team_frame.destroy()
+        app.lta[n].logo_cv[0].destroy()
+        app.lta[n].logo_cv[1].destroy()
+        app.lta[n].ligue_frame.destroy()
+        app.lta[n].team_name_frame.destroy()
+        app.lta[n].taux_historique_label.destroy()
+        app.lta[n].taux_saison_label.destroy()
+        app.lta[n].serie_label.destroy()
+        app.lta[n].longest_serie_label.destroy()
+        app.lta[n].taux_2x_no_goal_label.destroy()
+        app.lta[n].taux_3x_no_goal_label.destroy()
+        app.lta[n].prochain_match_label.destroy()
+        app.lta[n].adversaire_label.destroy()
+        app.lta[n].adversaire_taux_historique_label.destroy()
+        app.lta[n].adversaire_taux_saison_label.destroy()
+        app.lta[n].cote_match_label.destroy()
+        app.lta[n].classement_label.destroy()
+        app.lta[n].tete_a_tete_label.destroy()
+        app.lta[n].serie_a_contre_b_label.destroy()
+        app.lta[n].taux_historique_a_contre_b_label.destroy()
+        app.lta[n].longest_serie_a_contre_b_label.destroy()
+        app.lta[n].match_joues_label.destroy()
+        app.lta[n].victoire_label.destroy()
+        app.lta[n].nul_label.destroy()
+        app.lta[n].defaite_label.destroy()
+        app.lta[n].moyenne_match_goals_label.destroy()
+        app.lta[n].moyenne_goals_label.destroy()
 
         app.lta[n].team_frame = None
         app.lta[n].ligue_frame = None

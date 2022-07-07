@@ -8,7 +8,7 @@ from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
 
 from database_utils import *
-from crawler_utils_1 import get_os_chromedriver_path, resource_path, get_who_goal_first, get_match_id, process_data, get_next_match_data, get_classement_correct_page, get_correct_page, match_already_exist, show_all_match, wait_till_appear_class
+from crawler_utils_1 import match_already_exist, get_who_goal_first, get_match_id, get_os_chromedriver_path, resource_path, process_data, get_next_match_data, get_classement_correct_page, get_correct_page, show_all_match, wait_till_appear_class
 from crawler_utils_2 import get_data_json
 
 def crawl_specific_ligue_matchs(pays, ligue_name, ligue_id):
@@ -36,9 +36,11 @@ def crawl_specific_ligue_matchs(pays, ligue_name, ligue_id):
     crawl_classement(db, pays, ligue_name, ligue_id, year1, year2)
     for j in range(0, 5):
         get_correct_page(driver, pays, ligue_name, year1, year2, j)
+        time.sleep(3)
         show_all_match(driver)
-        if crawl_specific_match(driver, subdriver, s_db, db, ligue_id, year1, year2) == 0:
-            break
+        crawl_specific_matchs(driver, subdriver, s_db, db, ligue_id, year1, year2)
+        """ if crawl_specific_match(driver, subdriver, s_db, db, ligue_id, year1, year2) == 0:
+            break """
         year1 = year1 - 1
         year2 = year2 - 1
     db.commit()
@@ -46,6 +48,73 @@ def crawl_specific_ligue_matchs(pays, ligue_name, ligue_id):
     db = connect_to_database(s_db)
     driver.quit()
     subdriver.quit()
+
+
+def crawl_specific_matchs(driver, subdriver, s_db, db, ligue_id, year1, year2):
+    CLEANR = re.compile('<.*?>|&([a-z0-9]+|#[0-9]{1,6}|#x[0-9a-f]{1,6});')
+    journee = ''
+
+    if db == None:
+        db = connect_to_database(s_db)
+    if db:
+        cursor = db.cursor(buffered=True)
+        try:
+            div = driver.find_element_by_class_name('sportName')
+        except:
+            print("Les resultats sont introuvables")
+            return 1 
+        for n in range(2, 400):
+            try:
+                subdiv = div.find_element_by_xpath('div[%d]' % (n))
+            except:
+                break
+            if 'event__round' not in subdiv.get_attribute('class') and 'event__header' not in subdiv.get_attribute('class'):
+                match_id = get_match_id(cursor)
+                team_1_name = subdiv.find_elements_by_class_name('event__participant')[0]
+                team_1_name = re.sub(CLEANR, '', str(team_1_name.get_attribute("innerHTML")))
+                team_2_name = subdiv.find_elements_by_class_name('event__participant')[1]
+                team_2_name = re.sub(CLEANR, '', str(team_2_name.get_attribute("innerHTML")))
+                for m in range(0, 2):
+                    team_name = subdiv.find_elements_by_class_name('event__participant')[m]
+                    journee = subdiv.find_element_by_class_name('event__time')
+                    journee  = re.sub(CLEANR, '', str(journee.get_attribute("innerHTML")))
+                    if 'event__participant--home' in team_name.get_attribute('class'):
+                        domicile = 1
+                    else:
+                        domicile = 0
+                    team_name = re.sub(CLEANR, '', str(team_name.get_attribute("innerHTML")))
+                    team_score = subdiv.find_elements_by_class_name('event__score')[m]
+                    try:
+                        team_score = int(re.sub(CLEANR, '', str(team_score.get_attribute("innerHTML"))))
+                    except:
+                        print("Ne peux pas ajouter le resultat")
+                        return 1 
+                    try:
+                        team_midterm_score = subdiv.find_elements_by_class_name('event__part--1')[m]
+                        team_midterm_score = int(re.sub(CLEANR, '', str(team_midterm_score.get_attribute("innerHTML"))).replace('(', '').replace(')', ''))
+                    except:
+                        team_midterm_score = 0
+                    team_id =  database_fetchone(cursor, "SELECT ID FROM teams WHERE TEAM_NAME = '%s'" % (process_data(team_name)))
+                    if match_already_exist(cursor, ligue_id, process_data(team_1_name), process_data(team_2_name), process_data(journee), year1, year2) == 1:
+                        print("Match dèjà enregistré")
+                        return 0
+                    match_url = 'https://www.flashscore.fr/match/' + subdiv.get_attribute('id').split('_', 2)[2] + '/#/resume-du-match/resume-du-match'
+                    if domicile == 1:
+                        t_goal_first = get_who_goal_first(subdriver, match_url, subdiv, team_score, team_midterm_score, m)
+                    else:
+                        t_goal_first = 0
+                    try:
+                        cursor.execute("INSERT INTO matchs(ID, LIGUE_ID, YEAR1, YEAR2, JOURNEE, TEAM_ID, TEAM_NAME, GOAL, GOAL_MIDTERM, DOMICILE, GOAL_FIRST) VALUES (%d, %d , %d, %d, '%s', %d, '%s', %d, %d, %d, %d)" % (match_id, ligue_id, year1, year2, process_data(journee), team_id, process_data(team_name), team_score, team_midterm_score, domicile, t_goal_first))
+                        print("INSERT INTO matchs(ID, LIGUE_ID, YEAR1, YEAR2, JOURNEE TEAM_ID, TEAM_NAME, GOAL, GOAL_MIDTERM, DOMICILE, GOAL_FIRST) VALUES (%d, %d , %d, %d, '%s', %d, '%s', %d, %d, %d, %d)" % (match_id, ligue_id, year1, year2, process_data(journee), team_id, process_data(team_name), team_score, team_midterm_score, domicile, t_goal_first))
+                    except:
+                        print("N'insère rien")
+                        continue
+        db.commit()
+        print("commit")
+        return 0
+    else:
+        print("Echec de la connection a la base de données")
+        return 1
 
 def crawl_classement(db, pays, ligue_name, ligue_id, year1, year2):
     CLEANR = re.compile('<.*?>|&([a-z0-9]+|#[0-9]{1,6}|#x[0-9a-f]{1,6});')
@@ -82,76 +151,6 @@ def crawl_classement(db, pays, ligue_name, ligue_id, year1, year2):
             team_name = re.sub(CLEANR, '', str(team_name.get_attribute("innerHTML")))
             cursor.execute("UPDATE teams SET CLASSEMENT = '%s' WHERE TEAM_NAME = '%s' AND LIGUE_ID = %d" % (classement, process_data(team_name), ligue_id))
             print("UPDATE teams SET CLASSEMENT = '%s' WHERE TEAM_NAME = '%s' AND LIGUE_ID = %d" % (classement, process_data(team_name), ligue_id))
-        return 0
-    else:
-        print("Echec de la connection a la base de données")
-        return 1
-
-
-
-def crawl_specific_match(driver, subdriver, s_db, db, ligue_id, year1, year2):
-    CLEANR = re.compile('<.*?>|&([a-z0-9]+|#[0-9]{1,6}|#x[0-9a-f]{1,6});')
-    journee = ''
-
-    if db == None:
-        db = connect_to_database(s_db)
-    if db:
-        cursor = db.cursor(buffered=True)
-        div = driver.find_element_by_class_name('sportName')
-        for n in range(2, 400):
-            try:
-                subdiv = div.find_element_by_xpath('div[%d]' % (n))
-            except:
-                break
-            if 'event__round' not in subdiv.get_attribute('class') and 'event__header' not in subdiv.get_attribute('class'):
-                match_id = get_match_id(cursor)
-                team_1_name = subdiv.find_elements_by_class_name('event__participant')[0]
-                team_1_name = re.sub(CLEANR, '', str(team_1_name.get_attribute("innerHTML")))
-                team_2_name = subdiv.find_elements_by_class_name('event__participant')[1]
-                team_2_name = re.sub(CLEANR, '', str(team_2_name.get_attribute("innerHTML")))
-                for m in range(0, 2):
-                    team_name = subdiv.find_elements_by_class_name('event__participant')[m]
-                    if ligue_id == 42 or ligue_id == 18 or ligue_id == 35 or ligue_id == 26 or ligue_id == 27 or ligue_id == 13 or ligue_id == 25 or ligue_id == 29 or ligue_id == 36:
-                        journee = subdiv.find_element_by_class_name('event__time')
-                        journee  = re.sub(CLEANR, '', str(journee.get_attribute("innerHTML")))
-                    if 'event__participant--home' in team_name.get_attribute('class'):
-                        domicile = 1
-                    else:
-                        domicile = 0
-                    team_name = re.sub(CLEANR, '', str(team_name.get_attribute("innerHTML")))
-                    team_score = subdiv.find_elements_by_class_name('event__score')[m]
-                    try:
-                        team_score = int(re.sub(CLEANR, '', str(team_score.get_attribute("innerHTML"))))
-                    except:
-                        try:
-                            team_score = re.sub(CLEANR, '', str(team_score.get_attribute("innerHTML")))
-                        except:
-                            team_score = 0
-                    try:
-                        team_midterm_score = subdiv.find_elements_by_class_name('event__part--1')[m]
-                        team_midterm_score = int(re.sub(CLEANR, '', str(team_midterm_score.get_attribute("innerHTML"))).replace('(', '').replace(')', ''))
-                    except:
-                        team_midterm_score = 0
-                    team_id =  database_fetchone(cursor, "SELECT ID FROM teams WHERE TEAM_NAME = '%s'" % (process_data(team_name)))
-                    if match_already_exist(cursor, ligue_id, process_data(team_1_name), process_data(team_2_name), process_data(journee), year1, year2) == 1:
-                        print("Match dèjà enregistré")
-                        return 0
-                    match_url = 'https://www.flashscore.fr/match/' + subdiv.get_attribute('id').split('_', 2)[2] + '/#/resume-du-match/resume-du-match'
-                    if domicile == 1:
-                        t_goal_first = get_who_goal_first(subdriver, match_url, subdiv, team_score, team_midterm_score, m)
-                    else:
-                        t_goal_first = 0
-                    try:
-                        cursor.execute("INSERT INTO matchs(ID, LIGUE_ID, YEAR1, YEAR2, JOURNEE, TEAM_ID, TEAM_NAME, GOAL, GOAL_MIDTERM, DOMICILE, GOAL_FIRST) VALUES (%d, %d , %d, %d, '%s', %d, '%s', %d, %d, %d, %d)" % (match_id, ligue_id, year1, year2, process_data(journee), team_id, process_data(team_name), team_score, team_midterm_score, domicile, t_goal_first))
-                        print("INSERT INTO matchs(ID, LIGUE_ID, YEAR1, YEAR2, JOURNEE TEAM_ID, TEAM_NAME, GOAL, GOAL_MIDTERM, DOMICILE, GOAL_FIRST) VALUES (%d, %d , %d, %d, '%s', %d, '%s', %d, %d, %d, %d)" % (match_id, ligue_id, year1, year2, process_data(journee), team_id, process_data(team_name), team_score, team_midterm_score, domicile, t_goal_first))
-                    except:
-                        print("N'insère rien")
-                        continue
-            else:
-                if ligue_id != 42 and ligue_id != 18 and ligue_id != 35 and ligue_id != 26 and ligue_id != 27 and ligue_id != 13 and ligue_id != 25 and ligue_id != 29 and ligue_id != 36:
-                    journee = subdiv.get_attribute('innerHTML')   
-        db.commit()
-        print("commit")
         return 0
     else:
         print("Echec de la connection a la base de données")
@@ -242,6 +241,7 @@ def __main__():
     ligues = database_fetchall(cursor, "SELECT ID FROM %s.ligues" % ('football'))
     for i in range(0, len(ligues)):
         crawl_specific_ligue_matchs(pays_name_url[ligues[i] - 1], ligue_name_url[ligues[i] - 1], ligues[i])
+    #crawl_specific_ligue_matchs(pays_name_url[ligues[43] - 1], ligue_name_url[ligues[43] - 1], ligues[43])
     crawl_cotes()  
     
 

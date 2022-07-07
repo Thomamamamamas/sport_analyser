@@ -55,33 +55,21 @@ def reverse_sort_goal_by_day(app, n):
         app.lta[n].a_ext_day_sorted[m].reverse()
         app.lta[n].a_ext_goal_first[m].reverse()
     
-def process_journee(base_journee, ligue_id):
-    if ligue_id != 42 and ligue_id != 18 and ligue_id != 35 and ligue_id != 26 and ligue_id != 27 and ligue_id != 13 and ligue_id != 25 and ligue_id != 29 and ligue_id != 36:
-        if base_journee != '' and base_journee != None:
-            journee = str(base_journee).replace("Journée ", '')
-            journee = str(journee).replace("1/8 de finale", '97')
-            journee = str(journee).replace("Quarts de finale", '')
-            journee = str(journee).replace("Demi-finales", '99')
-            journee = str(journee).replace("Finale", '100')
-            if journee != '':
-                journee = int(journee)
-            else:
-                journee = 0
-        else:
+def process_journee(app, base_journee, ligue_id):
+    if base_journee != '' and base_journee != None:
+        try:
+            journee = str(base_journee).split(' ', 2)[0]
+            journee = str(journee[:len(journee) - 1])
+            journee = str(journee).split('.', 2)[1] + '.' + str(journee).split('.', 2)[0]
+            journee = float(journee)
+            if ((ligue_id in app.ligue_end_january) and journee >= 1 and journee <= 2)\
+            or ((ligue_id in app.ligue_end_july) and journee >= 8)\
+            or (ligue_id not in app.ligue_end_december) and journee >= 7:
+                journee = journee - 12
+        except:
             journee = 0
     else:
-        if base_journee != '' and base_journee != None:
-            try:
-                journee = str(base_journee).split(' ', 2)[0]
-                journee = str(journee[:len(journee) - 1])
-                journee = str(journee).split('.', 2)[1] + '.' + str(journee).split('.', 2)[0]
-                journee = float(journee)
-                if (ligue_id != 42) and journee >= 7:
-                    journee = journee - 12
-            except:
-                journee = 0
-        else:
-            journee = 0
+        journee = 0
     return journee
 
 
@@ -105,9 +93,9 @@ def get_all_match_team_a_contre_team_b(app, n):
         app.lta[n].t_vs_a_goal_first.append([])
         for i in range(0, len(app.lta[n].t_match_id[m])):
             for j in range(0, len(app.lta[n].a_match_id[m])):
-                if app.lta[n].a_match_id[m][j] == app.lta[n].t_match_id[m][i] and process_journee(app.lta[n].t_match_day[m][i], app.lta[n].ligue_id) not in app.lta[n].t_vs_a_day_sorted[m]:
+                if app.lta[n].a_match_id[m][j] == app.lta[n].t_match_id[m][i] and process_journee(app, app.lta[n].t_match_day[m][i], app.lta[n].ligue_id) not in app.lta[n].t_vs_a_day_sorted[m]:
                     app.lta[n].t_vs_a_match_id[m].append(app.lta[n].t_match_id[m][i])
-                    app.lta[n].t_vs_a_day_sorted[m].append(process_journee(app.lta[n].t_match_day[m][i], app.lta[n].ligue_id))
+                    app.lta[n].t_vs_a_day_sorted[m].append(process_journee(app, app.lta[n].t_match_day[m][i], app.lta[n].ligue_id))
                     app.lta[n].t_vs_a_goal_first[m].append(app.lta[n].t_match_goalfirst[m][i])
 
 def get_all_match_domicile(app, n):
@@ -115,8 +103,8 @@ def get_all_match_domicile(app, n):
         app.lta[n].t_home_day_sorted.append([])
         app.lta[n].t_home_goal_first.append([])
         for j in range(0, len(app.lta[n].t_match_home[i])):
-            if app.lta[n].t_match_home[i][j] == 1 and process_journee(app.lta[n].t_match_day[i][j], app.lta[n].ligue_id) not in app.lta[n].t_home_day_sorted[i]:
-                app.lta[n].t_home_day_sorted[i].append(process_journee(app.lta[n].t_match_day[i][j], app.lta[n].ligue_id))
+            if app.lta[n].t_match_home[i][j] == 1 and process_journee(app, app.lta[n].t_match_day[i][j], app.lta[n].ligue_id) not in app.lta[n].t_home_day_sorted[i]:
+                app.lta[n].t_home_day_sorted[i].append(process_journee(app, app.lta[n].t_match_day[i][j], app.lta[n].ligue_id))
                 app.lta[n].t_home_goal_first[i].append(app.lta[n].t_match_goalfirst[i][j])
 
 def get_all_match_exterieur(app, n):
@@ -124,8 +112,8 @@ def get_all_match_exterieur(app, n):
         app.lta[n].a_ext_day_sorted.append([])
         app.lta[n].a_ext_goal_first.append([])
         for j in range(0, len(app.lta[n].a_match_home[i])):
-            if app.lta[n].a_match_home[i][j] == 0 and process_journee(app.lta[n].a_match_day[i][j], app.lta[n].ligue_id) not in app.lta[n].a_ext_day_sorted[i]:
-                app.lta[n].a_ext_day_sorted[i].append(process_journee(app.lta[n].a_match_day[i][j], app.lta[n].ligue_id))
+            if app.lta[n].a_match_home[i][j] == 0 and process_journee(app, app.lta[n].a_match_day[i][j], app.lta[n].ligue_id) not in app.lta[n].a_ext_day_sorted[i]:
+                app.lta[n].a_ext_day_sorted[i].append(process_journee(app, app.lta[n].a_match_day[i][j], app.lta[n].ligue_id))
                 app.lta[n].a_ext_goal_first[i].append(app.lta[n].a_match_goalfirst[i][j])
 
 def get_all_match_domicile_team_a_contre_team_b(app, n):
@@ -135,8 +123,8 @@ def get_all_match_domicile_team_a_contre_team_b(app, n):
         for i in range(0, len(app.lta[n].t_match_id[m])):
             if app.lta[n].t_match_home[m][i] == 1:
                 for j in range(0, len(app.lta[n].a_match_id[m])):
-                    if app.lta[n].a_match_id[m][j] == app.lta[n].t_match_id[m][i] and process_journee(app.lta[n].t_match_day[m][i], app.lta[n].ligue_id) not in  app.lta[n].t_vs_a_home_day_sorted[m]:
-                        app.lta[n].t_vs_a_home_day_sorted[m].append(process_journee(app.lta[n].t_match_day[m][i], app.lta[n].ligue_id))
+                    if app.lta[n].a_match_id[m][j] == app.lta[n].t_match_id[m][i] and process_journee(app, app.lta[n].t_match_day[m][i], app.lta[n].ligue_id) not in  app.lta[n].t_vs_a_home_day_sorted[m]:
+                        app.lta[n].t_vs_a_home_day_sorted[m].append(process_journee(app, app.lta[n].t_match_day[m][i], app.lta[n].ligue_id))
                         app.lta[n].t_vs_a_home_goal_first[m].append(app.lta[n].t_match_goalfirst[m][i])
 
 def get_stats(cursor, app, n, m):

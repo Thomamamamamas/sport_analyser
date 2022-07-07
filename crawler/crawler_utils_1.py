@@ -95,9 +95,14 @@ def get_correct_page(driver, pays, ligues, year1, year2, j):
                 driver.get(url)
                 ligue_name = driver.find_element_by_class_name('heading__name').get_attribute('innerHTML').replace("'", '')
             except:
-                url = 'https://www.flashscore.fr/football/%s/%s' % (pays, ligues)
-                driver.get(url)
-                ligue_name = driver.find_element_by_class_name('heading__name').get_attribute('innerHTML').replace("'", '')
+                try:
+                    url = 'https://www.flashscore.fr/football/%s/%s' % (pays, ligues)
+                    driver.get(url)
+                    ligue_name = driver.find_element_by_class_name('heading__name').get_attribute('innerHTML').replace("'", '')
+                except:
+                    url = 'https://www.flashscore.fr/football/%s/%s-%d' % (pays, ligues, year1)
+                    driver.get(url)
+                    ligue_name = driver.find_element_by_class_name('heading__name').get_attribute('innerHTML').replace("'", '')
     return ligue_name
 
 

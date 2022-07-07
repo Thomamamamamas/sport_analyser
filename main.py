@@ -22,16 +22,21 @@ class App(tkinter.Tk):
         self.screen_height = self.winfo_screenheight()
         self.geometry('%sx%s' % (self.screen_width, self.screen_height))
         self.configure(bg='white')
+        self.number_of_widget = 0
         if platform.system() == 'Darwin':
-            self.large_column = 22
-            self.medium_column = 17
+            self.font_style = 'Helvetica 16 bold'
+            self.large_column = 23
+            self.medium_column = 18
             self.medium_empty_column = 12
             self.small_column = 12
+            self.limit_of_widget = 1000
         elif platform.system() == 'Windows':
-            self.large_column = 22
+            self.font_style = 'Helvetica 14 bold'
+            self.large_column = 23
             self.medium_column = 19
-            self.medium_empty_column = 13
+            self.medium_empty_column = 12
             self.small_column = 12
+            self.limit_of_widget = 1000
         self.large_button_column = 15
         self.small_button_column = 9
         self.height_column = 1
@@ -52,6 +57,9 @@ class App(tkinter.Tk):
         self.id_team_sorted = []
         self.list_filtres = []
         self.list_filtres_value = []
+        self.ligue_end_january = get_data_json("ligue_end_january")
+        self.ligue_end_july = get_data_json("ligue_end_july")
+        self.ligue_end_december = get_data_json("ligue_end_december")
         #database_utils
         self.s_db = Db()
         self.db = connect_to_database(self.s_db)
@@ -67,6 +75,57 @@ class App(tkinter.Tk):
         else:
             mylabel = tkinter.Label(self, text="Erreur de connection à la base de données", fg="red")
             mylabel.pack()
+
+    def debug_mode(self, mode, id):
+        app.unbind('<Map>')
+        year1 = self.YEAR1
+        if mode == "ligue": 
+            get_ligue_team_id(self, id)
+            get_ligue_prochain_match(self, id)
+            get_ligue_team_name(self, id)
+            get_ligue_ligues_id(self, id)
+            get_ligue_ligue_name(self, id)
+            get_ligue_cotes(self, id)
+            get_ligue_classement(self, id)
+            get_ligue_ligue_logo_url(self, id)
+            get_ligue_team_logo_url(self, id)
+            get_ligue_adversaire(self, id)
+            get_ligue_adversaire_team_id(self, id)
+            get_ligue_adversaire_classement(self, id)
+            get_ligue_match_team(self, id)
+            get_ligue_match_adversaire(self, id)
+        elif mode == "team":
+            get_team_team_id(self, id)
+            get_team_prochain_match(self, id)
+            get_team_team_name(self, id)
+            get_team_ligues_id(self, id)
+            get_team_ligue_name(self, id)
+            get_team_cotes(self, id)
+            get_team_classement(self, id)
+            get_team_ligue_logo_url(self, id)
+            get_team_team_logo_url(self, id)
+            get_team_adversaire(self, id)
+            get_team_adversaire_team_id(self, id)
+            get_team_adversaire_classement(self, id)
+            get_team_match_team(self, id)
+            get_team_match_adversaire(self, id)
+        tmp_lta = []
+        for i in range(0, len(self.lta), 2):
+            tmp = 0
+            for j in range(0, 5):
+                tmp = len(self.lta[i].t_match_id[j]) + tmp
+            if tmp != 0:
+                tmp_lta.append(self.lta[i])
+                tmp_lta.append(self.lta[i + 1])
+        self.lta.clear()
+        self.lta = tmp_lta
+        for i in range(0, len(self.lta), 2):
+            year1 = self.YEAR1
+            for j in range(0, 2):
+                add_team(self, i + j, year1)
+                add_team_to_dataframe(self, self.lta[i])
+                year1 = year1 - 1
+        self.sort_teams(self.list_filtres, self.list_filtres_value, 0)
 
     def add_all_teams_to_app(self):
         app.unbind('<Map>')
@@ -97,13 +156,11 @@ class App(tkinter.Tk):
         self.lta = tmp_lta
         for i in range(0, len(self.lta), 2):
             year1 = self.YEAR1
-            #if self.lta[i].team_id == 163:
-            #if self.lta[i].ligue_id == 7:
             for j in range(0, 2):
                 add_team(self, i + j, year1)
                 add_team_to_dataframe(self, self.lta[i])
                 year1 = year1 - 1
-        self.sort_teams([0], [0], 0)
+        self.sort_teams(self.list_filtres, self.list_filtres_value, 0)
 
     def on_mousewheel(self, event):
         shift = (event.state & 0x1) != 0
@@ -126,11 +183,12 @@ class App(tkinter.Tk):
                 break
 
     def sort_teams(self, values, ascendings, is_sort):
+        self.number_of_widget = 0
+
         if len(self.lta) >= 2:
             self.row_team_id = 0
             self.id_team_sorted.clear()
             tmp_lta = []
-            
             sort_dataframe(self, values, ascendings)
             for i in range(0, len(self.df)):
                 if int(self.df.loc[i, 'id']) not in self.id_team_sorted:
@@ -143,8 +201,6 @@ class App(tkinter.Tk):
         for i in range(0, len(self.lta), 2):
             try:
                 year1 = self.YEAR1
-                #if self.lta[i].team_id == 163:
-                #if self.lta[i].ligue_id == 7:
                 for j in range(0, 2):
                     if is_sort == 1 and platform.system() == 'Windows':
                         get_team_tk(self, i + j, year1)
@@ -155,6 +211,12 @@ class App(tkinter.Tk):
 
 if __name__ == '__main__':
     app = App()
-    app.after(100, app.add_all_teams_to_app)
+    debug = False
+    if debug == True:
+        print("DEBUG MODE :")
+        #app.after(100, app.debug_mode("team", 163))
+        app.after(100, app.debug_mode("ligue", 7))
+    else:
+        app.after(100, app.add_all_teams_to_app)
     app.mainloop()
     
