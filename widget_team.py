@@ -55,7 +55,8 @@ def place_teams(app):
             year1 = year1 - 1
 
 def place_team(app, n, year1):
-    if app.lta[n].prochain_match != None and app.lta[n].prochain_match != '' and len(app.lta[n].t_match_id[0]) != 0 and app.number_of_widget < app.limit_of_widget:
+    if  app.number_of_widget < app.limit_of_widget:
+        app.number_of_widget = app.number_of_widget + 10
         print("place l'équipe : %d" % (app.lta[n].team_id))
         app.lta[n].team_frame.grid(row = app.row_team_id, column = 0, sticky = 'nsew')
         if year1 == app.YEAR1:

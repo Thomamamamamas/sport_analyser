@@ -128,6 +128,11 @@ class Team_data():
         self.team_against_adversaire__nul = 0
         self.team_against_adversaire_defaite = 0
 
+def check_if_team_is_valid(app, n):
+    if (app.lta[n].prochain_match == None or app.lta[n].prochain_match == '') or (len(app.lta[n].t_match_id[0]) == 0 and len(app.lta[n].t_match_id[1]) == 0):
+        return 0
+    return 1
+
 def get_team_taux(app, n, year1):
     if year1 == app.YEAR1:
         app.lta[n].taux_historique = get_taux_historique(app, n)
@@ -228,11 +233,12 @@ def add_team(app, n, year1):
         get_all_match_domicile_team_a_contre_team_b(app, n)
         get_all_match_domicile(app, n)
         get_all_match_exterieur(app, n)
-        reverse_sort_goal_by_day(app, n)
-        get_team_taux(app, n, year1)
-        get_team_adversaire(app, n, year1)
-        get_team_others_stats(app, n, year1)
-        get_team_tk(app, n, year1)
+        if check_if_team_is_valid(app, n) == 1:
+            reverse_sort_goal_by_day(app, n)
+            get_team_taux(app, n, year1)
+            get_team_adversaire(app, n, year1)
+            get_team_others_stats(app, n, year1)
+            get_team_tk(app, n, year1)
         
 def delete_team(app, team):
     delete_team_widget(team)

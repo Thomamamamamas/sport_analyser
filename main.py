@@ -3,7 +3,7 @@ import tkinter
 from datetime import date
 from database_utils import *
 from utils import *
-from team import  add_team, get_team_tk
+from team import  add_team, get_team_tk, check_if_team_is_valid
 from team_fetch import  *
 from widget import *
 from widget_team import delete_all_teams_widget, place_team
@@ -29,14 +29,14 @@ class App(tkinter.Tk):
             self.medium_column = 18
             self.medium_empty_column = 12
             self.small_column = 12
-            self.limit_of_widget = 1000
+            self.limit_of_widget = 5500
         elif platform.system() == 'Windows':
             self.font_style = 'Helvetica 14 bold'
             self.large_column = 23
             self.medium_column = 19
             self.medium_empty_column = 12
             self.small_column = 12
-            self.limit_of_widget = 1000
+            self.limit_of_widget = 3000
         self.large_button_column = 15
         self.small_button_column = 9
         self.height_column = 1
@@ -120,11 +120,12 @@ class App(tkinter.Tk):
         self.lta.clear()
         self.lta = tmp_lta
         for i in range(0, len(self.lta), 2):
-            year1 = self.YEAR1
-            for j in range(0, 2):
-                add_team(self, i + j, year1)
-                add_team_to_dataframe(self, self.lta[i])
-                year1 = year1 - 1
+            if check_if_team_is_valid(app, i) == 1:
+                year1 = self.YEAR1
+                for j in range(0, 2):
+                    add_team(self, i + j, year1)
+                    add_team_to_dataframe(self, self.lta[i])
+                    year1 = year1 - 1
         self.sort_teams(self.list_filtres, self.list_filtres_value, 0)
 
     def add_all_teams_to_app(self):
@@ -155,11 +156,12 @@ class App(tkinter.Tk):
         self.lta.clear()
         self.lta = tmp_lta
         for i in range(0, len(self.lta), 2):
-            year1 = self.YEAR1
-            for j in range(0, 2):
-                add_team(self, i + j, year1)
-                add_team_to_dataframe(self, self.lta[i])
-                year1 = year1 - 1
+            if check_if_team_is_valid(app, i) == 1:
+                year1 = self.YEAR1
+                for j in range(0, 2):
+                    add_team(self, i + j, year1)
+                    add_team_to_dataframe(self, self.lta[i])
+                    year1 = year1 - 1
         self.sort_teams(self.list_filtres, self.list_filtres_value, 0)
 
     def on_mousewheel(self, event):
@@ -199,23 +201,41 @@ class App(tkinter.Tk):
             self.lta.clear()
             self.lta = tmp_lta
         for i in range(0, len(self.lta), 2):
-            try:
-                year1 = self.YEAR1
-                for j in range(0, 2):
-                    if is_sort == 1 and platform.system() == 'Windows':
-                        get_team_tk(self, i + j, year1)
-                    place_team(self, j + i, year1)
-                    year1 = year1 - 1
-            except:
-                break
+            if check_if_team_is_valid(app, i) == 1:
+                try:
+                    year1 = self.YEAR1
+                    for j in range(0, 2):
+                        if is_sort == 1 and platform.system() == 'Windows':
+                            get_team_tk(self, i + j, year1)
+                        place_team(self, j + i, year1)
+                        year1 = year1 - 1
+                except:
+                    break
+
+
+def get_arg():
+    dict = {"debug": False, "debug_mode": 'ligue', "mode_value": 7}
+    for i in range(1, len(sys.argv)):
+        if "DEBUG=" in sys.argv[i]:
+            if "True" in sys.argv[i]:
+                dict["debug"] = True
+            else:
+                dict["debug"] = False
+        if "DEBUG_MODE=" in sys.argv[i]:
+            if "ligue" in sys.argv[i]:
+                dict["debug_mode"] = "ligue"
+            elif "team" in sys.argv[i]:
+                dict["debug_mode"] = "team"
+        if "MODE_VALUE=" in sys.argv[i]:
+            dict["mode_value"] = sys.argv[i].split('=', 1)[1]
+    return dict
 
 if __name__ == '__main__':
+    arg_dict = get_arg()
     app = App()
-    debug = False
-    if debug == True:
+    if arg_dict["debug"] == True:
         print("DEBUG MODE :")
-        #app.after(100, app.debug_mode("team", 163))
-        app.after(100, app.debug_mode("ligue", 7))
+        app.after(100, app.debug_mode(arg_dict["debug_mode"], arg_dict["mode_value"]))
     else:
         app.after(100, app.add_all_teams_to_app)
     app.mainloop()

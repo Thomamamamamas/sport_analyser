@@ -39,8 +39,6 @@ def crawl_specific_ligue_matchs(pays, ligue_name, ligue_id):
         time.sleep(3)
         show_all_match(driver)
         crawl_specific_matchs(driver, subdriver, s_db, db, ligue_id, year1, year2)
-        """ if crawl_specific_match(driver, subdriver, s_db, db, ligue_id, year1, year2) == 0:
-            break """
         year1 = year1 - 1
         year2 = year2 - 1
     db.commit()

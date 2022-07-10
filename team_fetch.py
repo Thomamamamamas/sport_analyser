@@ -1,9 +1,8 @@
-from this import d
 from database_utils import *
 from team import Team_data
 
 def get_all_team_id(app):
-    db_data = database_fetchall(app.cursor, "SELECT ID FROM football.teams")
+    db_data = database_fetchall(app.cursor, "SELECT ID FROM football.teams WHERE MATCH_TO_COMING != ''")
     for i in range(0, len(db_data)):
         for j in range(0, 2):
             new_team = Team_data()
@@ -75,7 +74,7 @@ def get_all_adversaire(app):
 
 def get_all_adversaire_team_id(app):
     for i in range(0, len(app.lta), 2):
-        db_data = database_fetchone(app.cursor, "SELECT ID FROM football.teams WHERE TEAM_NAME = '%s'" % (app.lta[i].adversaire))
+        db_data = database_fetchone(app.cursor, "SELECT ID FROM football.teams WHERE TEAM_NAME = '%s' AND LIGUE_ID = %d" % (app.lta[i].adversaire, app.lta[i].ligue_id))
         for j in range(0, 2):
             app.lta[i + j].adversaire_team_id = db_data
 
@@ -133,7 +132,7 @@ def get_all_match_adversaire(app):
 #_____________________________________________________________________________________LIGUE__________________________________________________________________________________________________________________________________________
 
 def get_ligue_team_id(app, id):
-    db_data = database_fetchall(app.cursor, "SELECT ID FROM football.teams WHERE LIGUE_ID = %s" % (id))
+    db_data = database_fetchall(app.cursor, "SELECT ID FROM football.teams WHERE LIGUE_ID = %s AND MATCH_TO_COMING != ''" % (id))
     for i in range(0, len(db_data)):
         for j in range(0, 2):
             new_team = Team_data()
@@ -263,7 +262,7 @@ def get_ligue_match_adversaire(app, id):
 #______________________________________________________________________________________TEAM__________________________________________________________________________________________________________________________________________
 
 def get_team_team_id(app, id):
-    db_data = database_fetchall(app.cursor, "SELECT ID FROM football.teams WHERE ID = %s" % (id))
+    db_data = database_fetchall(app.cursor, "SELECT ID FROM football.teams WHERE ID = %s AND MATCH_TO_COMING != ''" % (id))
     for i in range(0, len(db_data)):
         for j in range(0, 2):
             new_team = Team_data()
@@ -335,7 +334,7 @@ def get_team_adversaire(app, id):
 
 def get_team_adversaire_team_id(app, id):
     for i in range(0, len(app.lta), 2):
-        db_data = database_fetchone(app.cursor, "SELECT ID FROM football.teams WHERE TEAM_NAME = '%s' AND ID = %s" % (app.lta[i].adversaire, id))
+        db_data = database_fetchone(app.cursor, "SELECT ID FROM football.teams WHERE TEAM_NAME = '%s' AND ID = %s AND LIGUE_ID = $d" % (app.lta[i].adversaire, id, app.lta[i].ligue_id))
         for j in range(0, 2):
             app.lta[i + j].adversaire_team_id = db_data
 

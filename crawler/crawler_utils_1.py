@@ -130,24 +130,19 @@ def get_next_match_data(driver, db, pays, ligue_name, ligue_id):
                 team_name = re.sub(CLEANR, '', str(team_name.get_attribute("innerHTML")))
                 if team_name in teams_name:
                     print("Date du prochain match deja enregistrer")
-                    return
+                    break
                 teams_name.append(team_name)
                 adversaire_name = subdiv.find_element_by_class_name('event__participant--away')
                 adversaire_name = re.sub(CLEANR, '', str(adversaire_name.get_attribute("innerHTML")))
                 match_time = subdiv.find_element_by_class_name('event__time')
                 match_time = re.sub(CLEANR, '', str(match_time.get_attribute("innerHTML")))   
-                coming_match_time = database_fetchone(cursor, "SELECT MATCH_TO_COMING FROM teams WHERE TEAM_NAME = '%s'" % (process_data(team_name)))
-                if coming_match_time != match_time:
-                    print(team_name)
-                    cursor.execute("UPDATE teams SET MATCH_TO_COMING = '%s' WHERE TEAM_NAME = '%s'" % (match_time, process_data(team_name)))
-                    print("UPDATE teams SET MATCH_TO_COMING = '%s' WHERE TEAM_NAME = '%s'" % (match_time, process_data(team_name)))    
-                    cursor.execute("UPDATE teams SET ADVERSAIRE_B = '%s' WHERE TEAM_NAME = '%s'" % (process_data(adversaire_name), process_data(team_name)))
-                    print("UPDATE teams SET ADVERSAIRE_B = '%s' WHERE TEAM_NAME = '%s'" % (process_data(adversaire_name), process_data(team_name)))  
-                else:
-                    print("Date du prochain match deja enregistrer")
-                    break
-                db.commit()
-                print("commit")
+                print(team_name)
+                cursor.execute("UPDATE teams SET MATCH_TO_COMING = '%s' WHERE TEAM_NAME = '%s' AND LIGUE_ID = %d" % (match_time, process_data(team_name), ligue_id))
+                print("UPDATE teams SET MATCH_TO_COMING = '%s' WHERE TEAM_NAME = '%s'  AND LIGUE_ID = %d" % (match_time, process_data(team_name), ligue_id))    
+                cursor.execute("UPDATE teams SET ADVERSAIRE_B = '%s' WHERE TEAM_NAME = '%s' AND LIGUE_ID = %d" % (process_data(adversaire_name), process_data(team_name), ligue_id))
+                print("UPDATE teams SET ADVERSAIRE_B = '%s' WHERE TEAM_NAME = '%s' AND LIGUE_ID = %d" % (process_data(adversaire_name), process_data(team_name), ligue_id))  
+        db.commit()
+        print("commit")
     else:
         print("Echec de la connection a la base de données")
 

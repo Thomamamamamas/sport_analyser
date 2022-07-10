@@ -263,7 +263,6 @@ def delete_saved_filtres(app, n):
         filtre_json.write(tmp)
         filtre_json.close()
 
-
 def change_saved_filtres(app, filtre, n):
     tmp = ''
     with open(resource_path('config/filtre.json'), "r") as filtre_json:
