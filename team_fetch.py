@@ -129,6 +129,21 @@ def get_all_match_adversaire(app):
             db_data.clear()
             year1 = year1 - 1
 
+def get_other_match_result(app):
+    for i in range(0, len(app.lta), 1):
+        year1 = app.YEAR1
+        for a in range(0, 5):
+            app.lta[i].o_match_id.append([])
+            app.lta[i].o_match_res.append([])
+            format_match_id = ','.join(['%s'] * len(app.lta[i].t_match_id[a],))
+            db_data = database_fetchall_everything(app.cursor, "SELECT * FROM matchs WHERE ID IN (%s) AND YEAR1 = %d" % (format_match_id, tuple(app.lta[i].t_match_id[a]), year1))
+            for z in range(0, len(db_data), 1):
+                app.lta[i].o_match_id[a].append(db_data[z][0])
+                app.lta[i].o_match_res[a].append(db_data[z][7])
+            db_data.clear()
+            year1 = year1 - 1
+
+
 #_____________________________________________________________________________________LIGUE__________________________________________________________________________________________________________________________________________
 
 def get_ligue_team_id(app, id):

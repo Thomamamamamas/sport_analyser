@@ -5,7 +5,7 @@ from urllib.request import urlopen
 import io
 import base64
 from database_utils import *
-from utils import resource_path
+from utils import resource_path, home_path
 from widget_team import delete_all_teams_widget
 
 class Filtre_option():
@@ -15,7 +15,7 @@ class Filtre_option():
                                 "taux_historique", "taux_saison", "serie", "record", "taux_2x_no_goal", "taux_3x_no_goal", "prochain_match", 
                                 "adversaire_taux_historique",  "adversaire_taux_saison", "classement", "serie_a_contre_b", "taux_a_contre_b", 
                                 "serie_a_contre_b", "record_a_contre_b", "match_joues", "victoire", "nul", "defaite", 
-                                "team_moyenne_match_goals", "team_moyenne_goals"],
+                                "team_moyenne_match_goals", "team_moyenne_goals", "record atteint"],
                             "text_values": [
                                 ["Du plus grand au plus petit", "Du plus petit au plus grand"],
                                 ["Du plus grand au plus petit", "Du plus petit au plus grand"],
@@ -36,7 +36,8 @@ class Filtre_option():
                                 ["Du plus grand au plus petit", "Du plus petit au plus grand"],
                                 ["Du plus grand au plus petit", "Du plus petit au plus grand"],
                                 ["Du plus grand au plus petit", "Du plus petit au plus grand"],
-                                ["Du plus grand au plus petit", "Du plus petit au plus grand"]]
+                                ["Du plus grand au plus petit", "Du plus petit au plus grand"],
+                                ["Record atteint", "Record non atteint"]]
                             }
         self.filtre_selected = tkinter.StringVar()
         self.filtre_selected.set(self.filtre_dict["text_mode"][0])
@@ -213,7 +214,7 @@ def set_filtre_value(selection, app, filtre):
 
 def add_saved_filtres(filtre):
     tmp = ''
-    with open(resource_path('config/filtre.json'), 'r') as filtre_json:
+    with open(home_path('config/filtre.json'), 'r') as filtre_json:
         for line in filtre_json:
             if '"filtres":' in line or '"values":' in line:
                 tmp = tmp + line.split(']', 2)[0]
@@ -229,13 +230,14 @@ def add_saved_filtres(filtre):
                 tmp = tmp + '\n'
             else:
                 tmp = tmp + line
-    with open(resource_path('config/filtre.json'), 'w') as filtre_json:
+    with open(home_path('config/filtre.json'), 'w') as filtre_json:
         filtre_json.write(tmp)
         filtre_json.close()
+    print("Sauvegarde Filtre")
 
 def delete_saved_filtres(app, n):
     tmp = ''
-    with open(resource_path('config/filtre.json'), "r") as filtre_json:
+    with open(home_path('config/filtre.json'), "r") as filtre_json:
         for line in filtre_json:
             if '"filtres":' in line or '"values":' in line:
                 line = line.split(']', 1)[0]
@@ -259,13 +261,14 @@ def delete_saved_filtres(app, n):
             else:
                 tmp = tmp + line
         filtre_json.close()
-    with open(resource_path('config/filtre.json'), 'w') as filtre_json:
+    with open(home_path('config/filtre.json'), 'w') as filtre_json:
         filtre_json.write(tmp)
         filtre_json.close()
+    print("Supprime Filtre")
 
 def change_saved_filtres(app, filtre, n):
     tmp = ''
-    with open(resource_path('config/filtre.json'), "r") as filtre_json:
+    with open(home_path('config/filtre.json'), "r") as filtre_json:
         for line in filtre_json:
             if '"filtres":' in line or '"values":' in line:
                 line = line.split(']', 1)[0]
@@ -291,9 +294,10 @@ def change_saved_filtres(app, filtre, n):
             else:
                 tmp = tmp + line
         filtre_json.close()
-    with open(resource_path('config/filtre.json'), 'w') as filtre_json:
+    with open(home_path('config/filtre.json'), 'w') as filtre_json:
         filtre_json.write(tmp)
         filtre_json.close()
+    print("Change Filtre")
 
 if __name__ == '__main__':
     s_db = Db()

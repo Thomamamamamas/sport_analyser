@@ -1,9 +1,11 @@
 import tkinter
+from PIL import Image
+from multiprocessing import Process, Manager
 from database_utils import *
 from utils import *
 from utils_taux import *
 from utils_serie import *
-from widget_team import *
+from widget_team import get_image, delete_all_teams_widget
     
 class Team_data():
     def __init__(self):
@@ -121,6 +123,9 @@ class Team_data():
         self.a_saison_exterieur_match = 0
         self.a_saison_goal_first = 0
 
+        self.o_match_id = []
+        self.o_match_res = []
+
         self.team_victoire = 0
         self.team_nul = 0
         self.team_defaite = 0
@@ -223,8 +228,8 @@ def get_team_tk(app, n, year1):
         app.lta[n].longest_serie_a_contre_b_label =  tkinter.Label(app.lta[n].team_frame, text=" ", font=app.font_style,  bg=app.lta[n].BG, fg='black', height= app.height_column, width = app.small_column)
         app.lta[n].empty_large_label =  tkinter.Label(app.lta[n].team_frame, text="                                                        ", font=app.font_style,  bg=app.lta[n].BG, fg='black', height= app.height_column, width = app.large_column)
 
+
 def add_team(app, n, year1):
-    print("ajoute l'équipe : %d" % (app.lta[n].team_id))
     if app.lta[n].BG != '#66ff99':
         app.lta[n].BG = "white"
     if app.lta[n].prochain_match != None or app.lta[n].prochain_match != '':
@@ -234,17 +239,77 @@ def add_team(app, n, year1):
         get_all_match_domicile(app, n)
         get_all_match_exterieur(app, n)
         if check_if_team_is_valid(app, n) == 1:
+            print("ajoute l'équipe : %d" % (app.lta[n].team_id))
             reverse_sort_goal_by_day(app, n)
             get_team_taux(app, n, year1)
             get_team_adversaire(app, n, year1)
             get_team_others_stats(app, n, year1)
             get_team_tk(app, n, year1)
-        
-def delete_team(app, team):
-    delete_team_widget(team)
-    app.lta.remove(team)
-    del team
 
 def delete_all_teams(app):
     delete_all_teams_widget(app)
     app.lta.clear()
+
+def add_all_ligue_teams_image(ligue_logo, team_logo, ligue_logo_file_name, team_logo_file_name, team_logo_url, ligue_logo_url, ligue_id):
+    for i in range(0, len(ligue_logo_url)):
+        file_name = ligue_logo_url[i]
+        if 'https://www.' not in file_name:
+            file_name = 'https://www.' + file_name
+        file_name = 'images/' + file_name.replace('/', '_').replace('.', '_').replace(':', '_') + '.png'
+        if file_name not in ligue_logo_file_name:
+                print("Sauvegarde image des ligues")
+                img = Image.open(resource_path(file_name)).convert('RGBA')
+                ligue_logo.append(img)
+                ligue_logo_file_name.append(file_name)
+    for i in range(0, len(team_logo_url)):
+        file_name = team_logo_url[i]
+        if 'https://www.' not in file_name:
+            team_logo_url = 'https://www.' + file_name
+        file_name = 'images/' + file_name.replace('/', '_').replace('.', '_').replace(':', '_') + '.png'
+        if file_name not in team_logo_file_name:
+            print("Sauvegarde image des équipes")
+            img = Image.open(resource_path(file_name)).convert('RGBA')
+            team_logo.append(img)
+            team_logo_file_name.append(file_name)
+
+ligue_logo = []
+team_logo = []
+ligue_logo_file_name = []
+team_logo_file_name = []
+
+def add_all_image(app):
+    with Manager() as manager:
+        ligue_logo = manager.list()  # <-- can be shared between processes.
+        team_logo = manager.list()  # <-- can be shared between processes.
+        ligue_logo_file_name = manager.list()  # <-- can be shared between processes.
+        team_logo_file_name = manager.list()  # <-- can be shared between processes.
+        processes = []
+        for i in range(1 , 6):
+            team_logo_url = []
+            ligue_logo_url = []
+            for j in range(1, len(app.lta)):
+                if app.lta[j].ligue_id < i * 16 and app.lta[j].ligue_id <= (i - 1) * 16 and check_if_team_is_valid(app, i) == 1:
+                    team_logo_url.append(app.lta[j].team_logo_url)
+                    ligue_logo_url.append(app.lta[j].ligue_logo_url)
+            p = Process(target=add_all_ligue_teams_image, args=(ligue_logo, team_logo, ligue_logo_file_name, team_logo_file_name, team_logo_url, ligue_logo_url, i))  # Passing the list
+            p.start()
+            processes.append(p)
+        for p in processes:
+            p.join()
+            p.terminate()
+        tmp = []
+        for i in range(0, len(team_logo)):
+            if team_logo[i] not in app.team_logo:
+                app.team_logo.append(team_logo[i])
+        for i in range(0, len(team_logo_file_name)):
+            if team_logo_file_name[i] not in app.team_logo_file_name:
+                app.team_logo_file_name.append(team_logo_file_name[i])
+        for i in range(0, len(ligue_logo)):
+            if ligue_logo[i] not in app.ligue_logo :
+                app.ligue_logo .append(ligue_logo[i])
+        for i in range(0, len(ligue_logo_file_name)):
+            if ligue_logo_file_name[i] not in app.ligue_logo_file_name :
+                app.ligue_logo_file_name .append(ligue_logo_file_name[i])
+
+        print(len(app.team_logo_file_name))
+        print(len(app.team_logo))

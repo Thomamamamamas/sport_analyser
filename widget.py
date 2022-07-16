@@ -66,7 +66,7 @@ def set_column_utils(app):
 
 def get_filtres_json(data):
     config_text = ''
-    with open(resource_path('config/filtre.json'), 'r') as config_json:
+    with open(home_path('config/filtre.json'), 'r') as config_json:
         for line in config_json:
             config_text = config_text + line
         config_json.close()

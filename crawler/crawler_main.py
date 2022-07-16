@@ -34,7 +34,7 @@ def crawl_specific_ligue_matchs(pays, ligue_name, ligue_id):
 
     get_next_match_data(caldriver, db, pays, ligue_name, ligue_id)
     crawl_classement(db, pays, ligue_name, ligue_id, year1, year2)
-    for j in range(0, 5):
+    for j in range(0, 1):
         get_correct_page(driver, pays, ligue_name, year1, year2, j)
         time.sleep(3)
         show_all_match(driver)

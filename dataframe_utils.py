@@ -10,6 +10,18 @@ def get_team_prochain_match_df(prochain_match):
     except:
         return 100
 
+    
+def get_record_atteint_df(actual_serie, longest_serie, classement):
+    if actual_serie >= longest_serie and actual_serie != 0:
+        tmp = 1
+    else: 
+        tmp = 0
+    try:
+        res =  100 * float(tmp) - float(classement)
+    except:
+        res = float(tmp)
+    return res
+
 def add_team_to_dataframe(app, team):
     dict_team = {
         "id": team.team_id,"taux_historique": team.taux_historique, "taux_saison": team.taux_saison, "serie": team.actual_serie, "record": team.longest_serie,
@@ -18,7 +30,7 @@ def add_team_to_dataframe(app, team):
         "classement": team.classement, "serie_a_contre_b": team.serie_a_contre_b, "taux_a_contre_b": team.taux_historique_a_contre_b, 
         "serie_a_contre_b": team.actual_serie_a_contre_b, "record_a_contre_b": team.longest_serie_a_contre_b,
         "match_joues": team.team_matchs_joues, "victoire": team.team_victoire, "nul": team.team_nul, "defaite": team.team_defaite, 
-        "team_moyenne_match_goals": team.team_moyenne_match_goals, "team_moyenne_goals": team.team_moyenne_goals
+        "team_moyenne_match_goals": team.team_moyenne_match_goals, "team_moyenne_goals": team.team_moyenne_goals, "record atteint": get_record_atteint_df(team.actual_serie, team.longest_serie, team.classement)
     }
     df_tmp = pd.DataFrame([dict_team])
     app.df = pd.concat([app.df, df_tmp], ignore_index=True)
@@ -66,6 +78,8 @@ def get_dataframe_sort_values(values):
             sort_values.append("team_moyenne_match_goals")
         if values[i] == 19:
             sort_values.append("team_moyenne_goals")
+        if values[i] == 20:
+            sort_values.append("record atteint")
 
     return sort_values
 

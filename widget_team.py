@@ -3,6 +3,7 @@ import tkinter
 from utils import resource_path
 
 def check_if_image_already_create(app, file_name, i):
+    img = None
     if i == 0:
         if file_name not in app.ligue_logo_file_name:
             print("Sauvegarde image ligue")
@@ -13,7 +14,7 @@ def check_if_image_already_create(app, file_name, i):
             for n in range(0, len(app.ligue_logo_file_name)):
                 if app.ligue_logo_file_name[n] ==  file_name:
                     tmp = n
-                    break
+                    break 
             img = app.ligue_logo[tmp]
     elif i == 1:
         if file_name not in app.team_logo_file_name:
@@ -57,7 +58,7 @@ def place_teams(app):
 def place_team(app, n, year1):
     if  app.number_of_widget < app.limit_of_widget:
         app.number_of_widget = app.number_of_widget + 10
-        print("place l'équipe : %d" % (app.lta[n].team_id))
+        #print("place l'équipe : %d" % (app.lta[n].team_id))
         app.lta[n].team_frame.grid(row = app.row_team_id, column = 0, sticky = 'nsew')
         if year1 == app.YEAR1:
             app.lta[n].ligue_frame.grid(row = 0, column = 0, sticky = 'nsew')
@@ -102,10 +103,12 @@ def delete_all_teams_widget(app):
         delete_team_widget(app, i)
 
 def delete_team_widget(app, n):
-    try:
-        app.lta[n].team_frame.destroy()
-        app.lta[n].logo_cv[0].destroy()
-        app.lta[n].logo_cv[1].destroy()
+    if app.number_of_widget >= 10:
+        try:
+            app.lta[n].logo_cv[0].destroy()
+            app.lta[n].logo_cv[1].destroy()
+        except:
+            app.lta[n].logo_cv.clear()
         app.lta[n].ligue_frame.destroy()
         app.lta[n].team_name_frame.destroy()
         app.lta[n].taux_historique_label.destroy()
@@ -129,35 +132,34 @@ def delete_team_widget(app, n):
         app.lta[n].nul_label.destroy()
         app.lta[n].defaite_label.destroy()
         app.lta[n].moyenne_match_goals_label.destroy()
-        app.lta[n].moyenne_goals_label.destroy()
+        app.lta[n].moyenne_goals_label.destroy() 
+        app.lta[n].team_frame.destroy()
+        app.number_of_widget = app.number_of_widget - 10
 
-        app.lta[n].team_frame = None
-        app.lta[n].ligue_frame = None
-        app.lta[n].team_name_frame = None
-        app.lta[n].taux_historique_label = None
-        app.lta[n].taux_saison_label = None
-        app.lta[n].serie_label = None
-        app.lta[n].longest_serie_label = None
-        app.lta[n].taux_2x_no_goal_label = None
-        app.lta[n].taux_3x_no_goal_label = None
-        app.lta[n].prochain_match_label = None
-        app.lta[n].adversaire_label = None
-        app.lta[n].adversaire_taux_historique_label = None
-        app.lta[n].adversaire_taux_saison_label = None
-        app.lta[n].cote_match_label = None
-        app.lta[n].classement_label = None
-        app.lta[n].tete_a_tete_label = None
-        app.lta[n].serie_a_contre_b_label = None
-        app.lta[n].taux_historique_a_contre_b_label = None
-        app.lta[n].longest_serie_a_contre_b_label = None
-        app.lta[n].match_joues_label = None
-        app.lta[n].victoire_label = None
-        app.lta[n].nul_label = None
-        app.lta[n].defaite_label = None
-        app.lta[n].moyenne_match_goals_label = None
-        app.lta[n].moyenne_goals_label = None
-        app.lta[n].logo_cv.clear()
-    except:
-        return
-
-        
+    app.lta[n].team_frame = None
+    app.lta[n].ligue_frame = None
+    app.lta[n].team_name_frame = None
+    app.lta[n].taux_historique_label = None
+    app.lta[n].taux_saison_label = None
+    app.lta[n].serie_label = None
+    app.lta[n].longest_serie_label = None
+    app.lta[n].taux_2x_no_goal_label = None
+    app.lta[n].taux_3x_no_goal_label = None
+    app.lta[n].prochain_match_label = None
+    app.lta[n].adversaire_label = None
+    app.lta[n].adversaire_taux_historique_label = None
+    app.lta[n].adversaire_taux_saison_label = None
+    app.lta[n].cote_match_label = None
+    app.lta[n].classement_label = None
+    app.lta[n].tete_a_tete_label = None
+    app.lta[n].serie_a_contre_b_label = None
+    app.lta[n].taux_historique_a_contre_b_label = None
+    app.lta[n].longest_serie_a_contre_b_label = None
+    app.lta[n].match_joues_label = None
+    app.lta[n].victoire_label = None
+    app.lta[n].nul_label = None
+    app.lta[n].defaite_label = None
+    app.lta[n].moyenne_match_goals_label = None
+    app.lta[n].moyenne_goals_label = None
+    app.lta[n].logo_cv.clear()
+    app.lta[n].photo.clear()

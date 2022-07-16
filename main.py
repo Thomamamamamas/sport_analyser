@@ -1,9 +1,11 @@
 from pickle import TRUE
+from PIL import Image
 import tkinter
+from multiprocessing import Process, Manager
 from datetime import date
 from database_utils import *
 from utils import *
-from team import  add_team, get_team_tk, check_if_team_is_valid
+from team import  add_all_image, add_team, get_team_tk, check_if_team_is_valid
 from team_fetch import  *
 from widget import *
 from widget_team import delete_all_teams_widget, place_team
@@ -46,6 +48,7 @@ class App(tkinter.Tk):
         self.pays_name_url = get_data_json("pays")
         #team_utils
         self.lta = []
+        self.tmp_lta = []
         self.ligue_logo_file_name = []
         self.team_logo_file_name = []
         self.ligue_logo = []
@@ -77,7 +80,7 @@ class App(tkinter.Tk):
             mylabel.pack()
 
     def debug_mode(self, mode, id):
-        app.unbind('<Map>')
+        self.unbind('<Map>')
         year1 = self.YEAR1
         if mode == "ligue": 
             get_ligue_team_id(self, id)
@@ -109,6 +112,7 @@ class App(tkinter.Tk):
             get_team_adversaire_classement(self, id)
             get_team_match_team(self, id)
             get_team_match_adversaire(self, id)
+            get_other_match_result(self, id)
         tmp_lta = []
         for i in range(0, len(self.lta), 2):
             tmp = 0
@@ -129,7 +133,7 @@ class App(tkinter.Tk):
         self.sort_teams(self.list_filtres, self.list_filtres_value, 0)
 
     def add_all_teams_to_app(self):
-        app.unbind('<Map>')
+        self.unbind('<Map>')
         year1 = self.YEAR1
         get_all_team_id(self)
         get_all_prochain_match(self)
@@ -145,16 +149,16 @@ class App(tkinter.Tk):
         get_all_adversaire_classement(self)
         get_all_match_team(self)
         get_all_match_adversaire(self)
-        tmp_lta = []
         for i in range(0, len(self.lta), 2):
             tmp = 0
             for j in range(0, 5):
                 tmp = len(self.lta[i].t_match_id[j]) + tmp
             if tmp != 0:
-                tmp_lta.append(self.lta[i])
-                tmp_lta.append(self.lta[i + 1])
+                self.tmp_lta.append(self.lta[i])
+                self.tmp_lta.append(self.lta[i + 1])
         self.lta.clear()
-        self.lta = tmp_lta
+        self.lta = self.tmp_lta
+        print("Ajoute les images ...")
         for i in range(0, len(self.lta), 2):
             if check_if_team_is_valid(app, i) == 1:
                 year1 = self.YEAR1
@@ -163,6 +167,8 @@ class App(tkinter.Tk):
                     add_team_to_dataframe(self, self.lta[i])
                     year1 = year1 - 1
         self.sort_teams(self.list_filtres, self.list_filtres_value, 0)
+
+ 
 
     def on_mousewheel(self, event):
         shift = (event.state & 0x1) != 0
@@ -185,8 +191,6 @@ class App(tkinter.Tk):
                 break
 
     def sort_teams(self, values, ascendings, is_sort):
-        self.number_of_widget = 0
-
         if len(self.lta) >= 2:
             self.row_team_id = 0
             self.id_team_sorted.clear()
@@ -198,20 +202,21 @@ class App(tkinter.Tk):
                     for j in range(0, len(self.lta)):
                         if self.lta[j].team_id == int(self.df.loc[i, 'id']):
                             tmp_lta.append(self.lta[j])
+            if self.number_of_widget >= 10 and is_sort == 1:
+                delete_all_teams_widget(self)
             self.lta.clear()
-            self.lta = tmp_lta
+            for i in range(0, len(tmp_lta)):
+                self.lta.append(tmp_lta[i])
+            tmp_lta.clear()
         for i in range(0, len(self.lta), 2):
             if check_if_team_is_valid(app, i) == 1:
-                try:
-                    year1 = self.YEAR1
-                    for j in range(0, 2):
-                        if is_sort == 1 and platform.system() == 'Windows':
-                            get_team_tk(self, i + j, year1)
-                        place_team(self, j + i, year1)
-                        year1 = year1 - 1
-                except:
-                    break
-
+                year1 = self.YEAR1
+                for j in range(0, 2):
+                    if is_sort == 1:
+                        get_team_tk(self, i + j, year1)
+                    place_team(self, j + i, year1)
+                    year1 = year1 - 1
+                
 
 def get_arg():
     dict = {"debug": False, "debug_mode": 'ligue', "mode_value": 7}

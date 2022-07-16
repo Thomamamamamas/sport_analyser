@@ -1,6 +1,7 @@
 import sys
 import json
 import os
+from pathlib import Path
 from database_utils import *
 
 def get_data_json(data):
@@ -20,6 +21,10 @@ def resource_path(relative_path):
     except Exception:
         base_path = os.path.dirname(__file__)
     return os.path.join(base_path, relative_path)
+
+def home_path(relative_path):
+    home = str(Path.home())
+    return home + '/sport_analyser/' + relative_path
 
 def reverse_sort_goal_by_day(app, n):
     for m in range(0, 5):
@@ -146,7 +151,9 @@ def get_stats(cursor, app, n, m):
                 a_match_res == app.lta[n].a_match_res[m][j]
                 total_adversaire_score = total_adversaire_score + app.lta[n].a_match_res[m][j]
         if match_is_against_b == 0:
-            a_match_res = database_fetchone(cursor, "SELECT GOAL FROM matchs WHERE ID = %d AND TEAM_ID != %d" % (app.lta[n].t_match_id[m][i], app.lta[n].team_id))
+            for i in range(0, len(app.lta[n].o_match_id)):
+                if app.lta[n].o_match_id[i] == app.lta[n].t_match_id[m][i]:
+                    a_match_res = app.lta[n].o_match_res[i]
         if app.lta[n].t_match_res[m][i] > a_match_res:
                 app.lta[n].team_victoire = app.lta[n].team_victoire + 1
         elif app.lta[n].t_match_res[m][i] < a_match_res:
